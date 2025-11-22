@@ -2,6 +2,6 @@
 Utility functions for shadowlib.
 """
 
-from .packed_position import pack_position, pack_position_signed, unpack_position
+from .packed_position import packPosition, packPositionSigned, unpackPosition
 
-__all__ = ["pack_position", "unpack_position", "pack_position_signed"]
+__all__ = ["packPosition", "unpackPosition", "packPositionSigned"]

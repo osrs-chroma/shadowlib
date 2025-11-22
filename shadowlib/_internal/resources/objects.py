@@ -13,7 +13,7 @@ Positions are stored as packed 32-bit integers:
 import sqlite3
 from typing import Any, Dict, List, Optional, Tuple
 
-from ..utils.packed_position import pack_position_signed, unpack_position
+from ..utils.packed_position import packPositionSigned, unpackPosition
 from .base import BaseResource
 
 
@@ -198,7 +198,7 @@ class ObjectsResource(BaseResource):
         locations = []
         for row in cursor.fetchall():
             packed_pos = row[0]
-            x, y, plane = unpack_position(packed_pos)
+            x, y, plane = unpackPosition(packed_pos)
             locations.append((x, y, plane))
 
         return locations
@@ -234,8 +234,8 @@ class ObjectsResource(BaseResource):
         # IMPORTANT: Use signed packing for SQLite compatibility (planes 2-3 become negative)
         ranges = []
         for curr_x in range(min_x, max_x + 1):
-            min_packed = pack_position_signed(curr_x, min_y, plane)
-            max_packed = pack_position_signed(curr_x, max_y, plane)
+            min_packed = packPositionSigned(curr_x, min_y, plane)
+            max_packed = packPositionSigned(curr_x, max_y, plane)
             ranges.append((min_packed, max_packed))
 
         # Build SQL query with OR'd BETWEEN clauses for precise filtering

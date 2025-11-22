@@ -30,6 +30,7 @@ classifiers = [
 dependencies = [
     "msgpack>=1.0.0",
     "inotify-simple>=1.3.5",
+    "shapely>=2.0.0",
 ]
 
 [project.optional-dependencies]

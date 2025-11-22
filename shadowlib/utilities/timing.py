@@ -9,7 +9,7 @@ from typing import Any, Callable, Optional, Tuple
 import shadowlib.globals as globals
 
 
-def current_time() -> float:
+def currentTime() -> float:
     """
     Get the current time in seconds since the epoch.
 
@@ -19,7 +19,7 @@ def current_time() -> float:
     return time.time()
 
 
-def current_tick() -> int:
+def currentTick() -> int:
     """
     Get the current tick count from the game client.
 
@@ -30,16 +30,16 @@ def current_tick() -> int:
     return client.cache["tick"]
 
 
-def wait_ticks(ticks: int, tick_duration: float = 0.6):
+def waitTicks(ticks: int, tickDuration: float = 0.6):
     """
     Wait for a specified number of game ticks.
 
     Args:
         ticks: Number of ticks to wait
-        tick_duration: Duration of a single tick in seconds (default 0.6s)
+        tickDuration: Duration of a single tick in seconds (default 0.6s)
     """
-    start_tick = current_tick()
-    while current_tick() - start_tick < ticks:
+    start_tick = currentTick()
+    while currentTick() - start_tick < ticks:
         time.sleep(0.01)
 
 
@@ -141,7 +141,7 @@ def retry(
     return None
 
 
-def measure_time(func: Callable[[], Any]) -> Tuple[Any, float]:
+def measureTime(func: Callable[[], Any]) -> Tuple[Any, float]:
     """
     Measure execution time of a function.
 
@@ -152,7 +152,7 @@ def measure_time(func: Callable[[], Any]) -> Tuple[Any, float]:
         Tuple of (result, elapsed_time_seconds)
 
     Example:
-        result, elapsed = timing.measure_time(lambda: inventory.get_items())
+        result, elapsed = timing.measureTime(lambda: inventory.get_items())
         print(f"Function took {elapsed:.3f} seconds")
     """
     start = time.time()

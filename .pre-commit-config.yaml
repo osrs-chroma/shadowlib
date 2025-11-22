@@ -20,7 +20,7 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
-        exclude: ^(shadowlib/generated/|shadowlib/_internal/utils/|shadowlib/utilities/timing\.py|shadowlib/utilities/geometry\.py)
+        exclude: ^shadowlib/generated/
 
   # Note: mypy disabled in pre-commit (too slow, run manually with: mypy shadowlib/)
   # Type checking with mypy

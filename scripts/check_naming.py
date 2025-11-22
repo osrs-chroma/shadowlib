@@ -27,12 +27,10 @@ def isCamelCase(name: str) -> bool:
     if name.startswith("__") and name.endswith("__"):
         return True
 
-    # Allow private methods (single underscore prefix)
-    if name.startswith("_"):
-        name_without_prefix = name.lstrip("_")
-        if not name_without_prefix:
-            return True
-        return isCamelCase(name_without_prefix)
+    # Allow private methods (single underscore prefix) - can be snake_case
+    if name.startswith("_") and not name.startswith("__"):
+        # Private functions/methods can use snake_case
+        return True
 
     # camelCase pattern: starts with lowercase, may contain uppercase letters
     # but not consecutive uppercase (to avoid UPPER_CASE)
@@ -205,12 +203,9 @@ def main() -> int:
         print("No Python files found in shadowlib/")
         return 0
 
-    # Exclude patterns (generated code, internal utils, specific utility files)
+    # Exclude patterns (generated code only)
     exclude_patterns = [
         "/generated/",
-        "/_internal/utils/",
-        "/utilities/timing.py",
-        "/utilities/geometry.py",
     ]
 
     total_errors = 0

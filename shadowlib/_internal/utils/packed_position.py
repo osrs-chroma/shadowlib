@@ -8,7 +8,7 @@ Positions are stored as packed 32-bit integers:
 """
 
 
-def pack_position(x: int, y: int, plane: int) -> int:
+def packPosition(x: int, y: int, plane: int) -> int:
     """
     Pack (x, y, plane) into a 32-bit unsigned integer.
 
@@ -21,13 +21,13 @@ def pack_position(x: int, y: int, plane: int) -> int:
         Packed position as unsigned 32-bit integer
 
     Example:
-        >>> pack_position(3200, 3200, 0)
+        >>> packPosition(3200, 3200, 0)
         419430400
     """
     return (plane << 30) | (x << 15) | y
 
 
-def pack_position_signed(x: int, y: int, plane: int) -> int:
+def packPositionSigned(x: int, y: int, plane: int) -> int:
     """
     Pack (x, y, plane) into a 32-bit SIGNED integer for SQLite compatibility.
 
@@ -42,19 +42,19 @@ def pack_position_signed(x: int, y: int, plane: int) -> int:
         Packed position as signed 32-bit integer
 
     Example:
-        >>> pack_position_signed(3200, 3200, 0)
+        >>> packPositionSigned(3200, 3200, 0)
         419430400
-        >>> pack_position_signed(3200, 3200, 2)
+        >>> packPositionSigned(3200, 3200, 2)
         -1207959552  # Negative due to plane 2 setting bit 30
     """
-    packed = pack_position(x, y, plane)
+    packed = packPosition(x, y, plane)
     # Convert to signed 32-bit
     if packed >= 2**31:
         return packed - 2**32
     return packed
 
 
-def unpack_position(packed: int) -> tuple[int, int, int]:
+def unpackPosition(packed: int) -> tuple[int, int, int]:
     """
     Unpack a 32-bit integer into (x, y, plane).
 
@@ -65,9 +65,9 @@ def unpack_position(packed: int) -> tuple[int, int, int]:
         Tuple of (x, y, plane)
 
     Example:
-        >>> unpack_position(419430400)
+        >>> unpackPosition(419430400)
         (3200, 3200, 0)
-        >>> unpack_position(-1207959552)
+        >>> unpackPosition(-1207959552)
         (3200, 3200, 2)
     """
     # Convert signed to unsigned for bit operations
