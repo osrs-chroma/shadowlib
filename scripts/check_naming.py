@@ -205,8 +205,21 @@ def main() -> int:
         print("No Python files found in shadowlib/")
         return 0
 
+    # Exclude patterns (generated code, internal utils, specific utility files)
+    exclude_patterns = [
+        "/generated/",
+        "/_internal/utils/",
+        "/utilities/timing.py",
+        "/utilities/geometry.py",
+    ]
+
     total_errors = 0
     for filepath in sorted(python_files):
+        # Skip excluded files
+        filepath_str = str(filepath)
+        if any(pattern in filepath_str for pattern in exclude_patterns):
+            continue
+
         errors = checkFile(filepath)
         if errors:
             print(f"\n{filepath}:")

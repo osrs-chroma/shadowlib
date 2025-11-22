@@ -592,20 +592,27 @@ class ProxyGenerator:
         # Check if return type needs wrapping
         needs_wrapping = False
         wrapped_class = None
-        if return_type and return_type not in (
-            "int",
-            "long",
-            "bool",
-            "boolean",
-            "float",
-            "double",
-            "str",
-            "String",
-            "java.lang.String",
-            "None",
-            "Any",
-            "QueryRef",
-        ) and "[" not in return_type and "]" not in return_type and return_type not in self.enums:
+        if (
+            return_type
+            and return_type
+            not in (
+                "int",
+                "long",
+                "bool",
+                "boolean",
+                "float",
+                "double",
+                "str",
+                "String",
+                "java.lang.String",
+                "None",
+                "Any",
+                "QueryRef",
+            )
+            and "[" not in return_type
+            and "]" not in return_type
+            and return_type not in self.enums
+        ):
             wrapped_class = return_type
             needs_wrapping = True
 
@@ -638,16 +645,16 @@ class ProxyGenerator:
             # For simplicity, just use the first signature for each param count
             # Type-based overload resolution is complex and rarely needed
             sig, ret_type, gen_type, full_cls, decl_cls, params = sigs[0]
-            code += f'''        {if_keyword} arg_count == {param_count}:
+            code += f"""        {if_keyword} arg_count == {param_count}:
             signature = "{sig}"
             declaring_class = "{decl_cls}"
             return_type = "{full_cls if full_cls else ret_type}"
-'''
+"""
 
         # Add else clause for unsupported arg counts
         # Extract simple class name for error message
         simple_name = class_name.split("/")[-1]
-        code += f'''        else:
+        code += f"""        else:
             raise TypeError(f"{simple_name}.{method_name}() doesn't support {{arg_count}} arguments")
 
         ref = self._ref._createRef(
@@ -657,7 +664,7 @@ class ProxyGenerator:
             return_type=return_type,
             declaring_class=declaring_class
         )
-'''
+"""
 
         # Add wrapping if needed
         if needs_wrapping:
@@ -1083,8 +1090,8 @@ class ClassAccessor:
 PROXY_CLASSES = {"""
 
         for class_name in sorted(generated_classes):
-            code += f'''
-    "{class_name}": {class_name}Proxy,'''
+            code += f"""
+    "{class_name}": {class_name}Proxy,"""
 
         code += '''
 }

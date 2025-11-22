@@ -213,7 +213,9 @@ class RuneLiteAPI:
         """Connect to the universal bridge"""
         try:
             self.api_fd = open("/dev/shm/runelite_api_universal", "r+b")
-            self.api_channel = mmap.mmap(self.api_fd.fileno(), 16 * 1024 * 1024)  # 16MB to match C side
+            self.api_channel = mmap.mmap(
+                self.api_fd.fileno(), 16 * 1024 * 1024
+            )  # 16MB to match C side
 
             self.result_fd = open("/dev/shm/runelite_results_universal", "r+b")
             self.result_buffer = mmap.mmap(

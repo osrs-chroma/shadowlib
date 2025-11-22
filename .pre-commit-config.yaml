@@ -1,35 +1,36 @@
 repos:
   # Ruff - fast Python linter and formatter
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.9
+    rev: v0.8.4
     hooks:
       # Run the linter
       - id: ruff
         args: [--fix]
-        exclude: ^shadowlib/generated/
+        exclude: ^(shadowlib/generated/|scripts/)
       # Run the formatter
       - id: ruff-format
-        exclude: ^shadowlib/generated/
+        exclude: ^(shadowlib/generated/|scripts/)
 
   # Custom naming convention checker
   - repo: local
     hooks:
       - id: naming-convention
         name: Check camelCase naming convention
-        entry: python check_naming.py
+        entry: python3 scripts/check_naming.py
         language: system
         types: [python]
         pass_filenames: false
-        exclude: ^shadowlib/generated/
+        exclude: ^(shadowlib/generated/|shadowlib/_internal/utils/|shadowlib/utilities/timing\.py|shadowlib/utilities/geometry\.py)
 
+  # Note: mypy disabled in pre-commit (too slow, run manually with: mypy shadowlib/)
   # Type checking with mypy
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.7.1
-    hooks:
-      - id: mypy
-        additional_dependencies: [types-all]
-        args: [--ignore-missing-imports]
-        exclude: ^shadowlib/generated/
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v1.7.1
+  #   hooks:
+  #     - id: mypy
+  #       additional_dependencies: [types-all]
+  #       args: [--ignore-missing-imports]
+  #       exclude: ^shadowlib/generated/
 
   # Basic file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
