@@ -1488,8 +1488,11 @@ def main():
     scraper = EfficientRuneLiteScraper()
     scraper.scrapeLocalDirectory(api_path)
 
-    # Save the results - go up to project root
-    output_dir = Path(__file__).parent.parent.parent.parent / "data" / "api"
+    # Save the results using cache manager
+    from ..cache_manager import getCacheManager
+
+    cache_manager = getCacheManager()
+    output_dir = cache_manager.getDataPath("api")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     output_file = output_dir / "runelite_api_data.json"
@@ -1540,13 +1543,12 @@ def main():
         # Import proxy generator from same package
         from .proxy_generator import ProxyGenerator
 
-        # Get paths for proxy generation
-        # This file is in shadowlib/_internal/scraper/, so .parent.parent.parent.parent = project root
-        project_root = Path(__file__).parent.parent.parent.parent
-        api_data_path = project_root / "data" / "api" / "runelite_api_data.json"
+        # Get paths using cache manager
+        cache_manager = getCacheManager()
+        api_data_path = cache_manager.getDataPath("api") / "runelite_api_data.json"
 
-        # Generated files go in shadowlib/generated/
-        generated_dir = project_root / "shadowlib" / "generated"
+        # Generated files go in ~/.cache/shadowlib/generated/
+        generated_dir = cache_manager.generated_dir
         proxy_output_path = generated_dir / "query_proxies.py"
         constants_output_path = generated_dir / "constants.py"
 

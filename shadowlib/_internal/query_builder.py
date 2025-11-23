@@ -8,15 +8,52 @@ Now with Pythonic extensions for forEach, filter, map, and conditionals
 import json
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union
 
-from ..generated.query_proxies import (
-    ClientProxy,
-    LocalPointProxy,
-    PerspectiveProxy,
-    WorldPointProxy,
-)
-
 if TYPE_CHECKING:
     from .api import RuneLiteAPI
+
+# Lazy-load generated proxies to avoid circular imports
+_query_proxies = None
+_proxies_loaded = False
+
+
+def _loadProxies():
+    """Lazy-load generated proxy classes from cache."""
+    global \
+        _query_proxies, \
+        _proxies_loaded, \
+        ClientProxy, \
+        LocalPointProxy, \
+        PerspectiveProxy, \
+        WorldPointProxy
+
+    if _proxies_loaded:
+        return _query_proxies
+
+    from .generated_loader import ensureGeneratedFiles, loadGeneratedModule
+
+    # Ensure generated files exist
+    ensureGeneratedFiles()
+
+    # Import from cache
+    _query_proxies = loadGeneratedModule("query_proxies")
+    if _query_proxies is None:
+        raise ImportError("Failed to load generated query_proxies module from cache")
+
+    # Extract commonly used classes
+    ClientProxy = _query_proxies.ClientProxy
+    LocalPointProxy = _query_proxies.LocalPointProxy
+    PerspectiveProxy = _query_proxies.PerspectiveProxy
+    WorldPointProxy = _query_proxies.WorldPointProxy
+
+    _proxies_loaded = True
+    return _query_proxies
+
+
+# Initialize proxy references as None (will be loaded on first use)
+ClientProxy = None
+LocalPointProxy = None
+PerspectiveProxy = None
+WorldPointProxy = None
 
 
 def convertQueryArgs(args: tuple) -> List[Any]:
@@ -1063,6 +1100,9 @@ class Query:
             api: RuneLiteAPI instance for execution
             optimize: Whether to optimize queries (default True)
         """
+        # Ensure proxies are loaded
+        _loadProxies()
+
         self.api = api
         self.operations: List[Dict[str, Any]] = []
         self.selections: Dict[str, Dict[str, Any]] = {}
@@ -1101,10 +1141,11 @@ class Query:
 
         # Initialize class accessor for Pythonic constructor/static method access
         try:
-            from ..generated.query_proxies import QueryClassAccessor
-
-            self._class_accessor = QueryClassAccessor(self)
-        except ImportError:
+            if _query_proxies and hasattr(_query_proxies, "QueryClassAccessor"):
+                self._class_accessor = _query_proxies.QueryClassAccessor(self)
+            else:
+                self._class_accessor = None
+        except Exception:
             self._class_accessor = None
 
     def _createClientRef(self) -> "ClientProxy":
@@ -2861,14 +2902,21 @@ class Query:
         return f"Query(operations={len(self.operations)}, selections={len(self.selections)})"
 
 
-# Import generated proxies after all classes are defined to avoid circular import
-# The generated proxies provide all RuneLite API methods with proper typing
-try:
-    from ..generated.query_proxies import PROXY_CLASSES
-    from ..generated.query_proxies import ClientProxy as GeneratedClientProxy
+# Lazy-load proxy metadata (called when needed)
+PROXY_CLASSES = None
+GeneratedClientProxy = None
+_USE_GENERATED_PROXIES = False
 
-    _USE_GENERATED_PROXIES = True
-except ImportError as e:
-    # Generated proxies not available, will use dynamic proxy system
-    print(f"⚠️  Failed to import generated proxies: {e}")
-    pass
+
+def _ensureProxyMetadata():
+    """Ensure proxy metadata is loaded."""
+    global PROXY_CLASSES, GeneratedClientProxy, _USE_GENERATED_PROXIES
+
+    if _USE_GENERATED_PROXIES:
+        return
+
+    proxies = _loadProxies()
+    if proxies:
+        PROXY_CLASSES = getattr(proxies, "PROXY_CLASSES", None)
+        GeneratedClientProxy = getattr(proxies, "ClientProxy", None)
+        _USE_GENERATED_PROXIES = True

@@ -13,9 +13,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-# Base cache directory for all resources in project root
-# shadowlib/_internal/resources/base.py -> _internal -> shadowlib -> project root
-RESOURCES_CACHE_DIR = Path(__file__).parent.parent.parent.parent / "data" / "resources"
+from ..cache_manager import getCacheManager
 
 # Base URL for all resources
 BASE_URL = "https://storage.googleapis.com/osrs-chroma-storage-eu"
@@ -42,12 +40,15 @@ class BaseResource(ABC):
             shared_metadata_with: If set, use metadata from another resource's cache dir
         """
         self.resource_type = resource_type
-        self.cache_dir = RESOURCES_CACHE_DIR / resource_type
+
+        # Use cache manager for all paths
+        cache_manager = getCacheManager()
+        self.cache_dir = cache_manager.getDataPath(resource_type)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         # Metadata location (can be shared)
         if shared_metadata_with:
-            self.metadata_cache_dir = RESOURCES_CACHE_DIR / shared_metadata_with
+            self.metadata_cache_dir = cache_manager.getDataPath(shared_metadata_with)
         else:
             self.metadata_cache_dir = self.cache_dir
 
@@ -59,7 +60,7 @@ class BaseResource(ABC):
         self._metadata = None
         self._loaded = False
         self._last_check_time = 0
-        self._check_interval = 60  # Check at most once per minute  # Check at most once per minute
+        self._check_interval = 60  # Check at most once per minute
 
     @abstractmethod
     def getRemoteFiles(self) -> Dict[str, str]:

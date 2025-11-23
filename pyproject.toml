@@ -51,11 +51,24 @@ Issues = "https://github.com/ShadowLib/shadowlib/issues"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["shadowlib*"]
-exclude = ["tests*", "docs*"]
+exclude = [
+    "tests*",
+    "docs*",
+    "shadowlib.generated.query_proxies",
+    "shadowlib.generated.constants",
+    "shadowlib.generated.constants.*",
+]
+
+# Exclude large generated files from package data
+[tool.setuptools.package-data]
+shadowlib = [
+    "py.typed",
+    "_internal/**/*.pyi",
+]
 
 # Ruff configuration
 [tool.ruff]
-target-version = "1.0.1"
+target-version = "py38"
 line-length = 100
 indent-width = 4
 exclude = [

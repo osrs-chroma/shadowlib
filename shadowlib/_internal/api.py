@@ -10,7 +10,6 @@ import mmap
 import os
 import struct
 import time
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type
 
 if TYPE_CHECKING:
@@ -59,10 +58,11 @@ class RuneLiteAPI:
 
         # Always use the JSON file with perfect type conversion data
         if api_data_file is None:
-            # Look for data file in project's data/api directory
-            # shadowlib/_internal/api.py -> shadowlib/_internal -> shadowlib -> project root
-            project_root = Path(__file__).parent.parent.parent
-            api_data_file = project_root / "data" / "api" / "runelite_api_data.json"
+            # Look for data file in cache directory
+            from .cache_manager import getCacheManager
+
+            cache_manager = getCacheManager()
+            api_data_file = cache_manager.getDataPath("api") / "runelite_api_data.json"
 
         # Check for updates if enabled
         if auto_update:
@@ -128,8 +128,10 @@ class RuneLiteAPI:
         This allows querying plugin methods through the query builder.
         """
         try:
-            project_root = Path(__file__).parent.parent.parent
-            plugin_data_file = project_root / "data" / "api" / "shortestpath_api_data.json"
+            from .cache_manager import getCacheManager
+
+            cache_manager = getCacheManager()
+            plugin_data_file = cache_manager.getDataPath("api") / "shortestpath_api_data.json"
 
             if plugin_data_file.exists():
                 with open(plugin_data_file) as f:

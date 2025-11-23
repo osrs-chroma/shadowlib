@@ -4,11 +4,8 @@ Item name utilities for reverse lookup of ItemID constants.
 
 from typing import Dict, List, Optional
 
-# Lazy import to handle missing generated files
-try:
-    from ..generated.constants import ItemID
-except ImportError:
-    ItemID = None
+# Lazy import from cache using generated loader
+ItemID = None  # Will be loaded on first use
 
 
 class ItemNames:
@@ -26,13 +23,18 @@ class ItemNames:
         if cls._id_to_name is not None:
             return cls._id_to_name
 
-        # Check if ItemID is available
+        # Load ItemID from cache
+        global ItemID
         if ItemID is None:
-            raise RuntimeError(
-                "ItemID constants not available. "
-                "Run 'python -m src.scraper.auto_updater' to generate API data, "
-                "or initialize RuneLiteAPI() to trigger auto-update."
-            )
+            from .._internal.generated_loader import loadGeneratedModule
+
+            constants = loadGeneratedModule("constants")
+            if constants is None:
+                raise RuntimeError(
+                    "ItemID constants not available. "
+                    "Run 'python -m shadowlib._internal.updater --force' to generate constants."
+                )
+            ItemID = constants.ItemID
 
         cls._id_to_name = {}
 

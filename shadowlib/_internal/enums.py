@@ -176,13 +176,11 @@ def loadEnumsFromFile(api_data_file: Optional[str] = None) -> Dict[str, Type]:
     """
     # Default to the standard location in data/api directory
     if api_data_file is None:
-        # Look for data file in project's data/api directory
-        from pathlib import Path
+        # Look for data file in cache directory
+        from .cache_manager import getCacheManager
 
-        project_root = Path(
-            __file__
-        ).parent.parent.parent  # src/runeliteBridge -> src -> project root
-        api_data_file = str(project_root / "data" / "api" / "runelite_api_data.json")
+        cache_manager = getCacheManager()
+        api_data_file = str(cache_manager.getDataPath("api") / "runelite_api_data.json")
 
     # Load the API data
     try:

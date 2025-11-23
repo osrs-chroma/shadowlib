@@ -28,18 +28,19 @@ class RuneLiteAPIUpdater:
         Initialize updater.
 
         Args:
-            project_root: Project root directory (auto-detected if None)
+            project_root: Project root directory (auto-detected if None, unused with cache manager)
         """
-        if project_root is None:
-            # Auto-detect: go up from this file
-            # shadowlib/_internal/updater/api.py -> need 4 .parent calls
-            project_root = Path(__file__).parent.parent.parent.parent
+        # Use cache manager for all paths
+        from ..cache_manager import getCacheManager
 
-        self.project_root = Path(project_root)
-        self.data_dir = self.project_root / "data" / "api"
+        cache_manager = getCacheManager()
+        self.data_dir = cache_manager.getDataPath("api")
         self.temp_dir = self.data_dir / "temp"  # Temporary download location
         self.api_data_file = self.data_dir / "runelite_api_data.json"
         self.version_file = self.data_dir / "runelite_version.json"
+
+        # Store cache manager reference for proxy generation
+        self.cache_manager = cache_manager
 
         # GitHub API URLs
         self.github_api_url = "https://api.github.com/repos/runelite/runelite"
@@ -279,7 +280,8 @@ class RuneLiteAPIUpdater:
         """
         print("\n🔄 Regenerating proxy classes and constants...")
 
-        generated_dir = self.project_root / "shadowlib" / "generated"
+        # Use cache manager for generated files
+        generated_dir = self.cache_manager.generated_dir
         generated_dir.mkdir(parents=True, exist_ok=True)
 
         proxy_file = generated_dir / "query_proxies.py"

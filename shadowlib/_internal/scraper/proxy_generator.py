@@ -906,18 +906,20 @@ class ProxyGenerator:
         Returns:
             Complete Python code for all proxy classes
         """
-        # Header
+        # Header - Use absolute imports since file will be in cache
         code = '''"""
 Auto-generated proxy classes for RuneLite API Query Builder.
 Generated from scraped API data - DO NOT EDIT MANUALLY.
+
+This file is stored in ~/.cache/shadowlib/generated/ and uses absolute imports.
 """
 
 from __future__ import annotations
 from typing import Any, List, Union, Optional, TYPE_CHECKING
-from .._internal.query_builder import QueryRef
+from shadowlib._internal.query_builder import QueryRef
 
 if TYPE_CHECKING:
-    from .._internal.query_builder import Query
+    from shadowlib._internal.query_builder import Query
 
 
 class ProxyBase(QueryRef):
@@ -1683,13 +1685,14 @@ def get_proxy_class(class_name: str) -> type:
 
 def main():
     """Generate proxy classes and constants from API data."""
-    # Get paths - this file is in shadowlib/_internal/scraper/
-    # parent.parent.parent gets us to project root
-    project_root = Path(__file__).parent.parent.parent.parent
-    api_data_path = project_root / "data" / "api" / "runelite_api_data.json"
+    # Use cache manager for all paths
+    from ..cache_manager import getCacheManager
 
-    # Generated files go in shadowlib/generated/
-    generated_dir = project_root / "shadowlib" / "generated"
+    cache_manager = getCacheManager()
+    api_data_path = cache_manager.getDataPath("api") / "runelite_api_data.json"
+
+    # Generated files go in cache
+    generated_dir = cache_manager.generated_dir
     proxies_output_path = generated_dir / "query_proxies.py"
     constants_output_path = generated_dir / "constants.py"
 
