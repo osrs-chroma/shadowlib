@@ -54,24 +54,30 @@ class ObjectsResource(BaseResource):
         if not self._downloadFile(url, dest, decompress_gz=True):
             success = False
 
-        # Download metadata.json to varps directory (shared metadata location)
-        metadata_url = f"{self.base_url}/metadata.json"
-        metadata_dest = self.metadata_cache_dir / "metadata.json"
+        # Download shared files ONLY if they don't exist
+        # (VarpsResource may have already downloaded them)
         self.metadata_cache_dir.mkdir(parents=True, exist_ok=True)
-        if not self._downloadFile(metadata_url, metadata_dest, decompress_gz=False):
-            success = False
+
+        # Download metadata.json to varps directory (shared metadata location)
+        metadata_dest = self.metadata_cache_dir / "metadata.json"
+        if not metadata_dest.exists():
+            metadata_url = f"{self.base_url}/metadata.json"
+            if not self._downloadFile(metadata_url, metadata_dest, decompress_gz=False):
+                success = False
 
         # Download varps.json to varps directory
-        varps_url = f"{self.base_url}/varps.json"
         varps_dest = self.metadata_cache_dir / "varps.json"
-        if not self._downloadFile(varps_url, varps_dest, decompress_gz=False):
-            success = False
+        if not varps_dest.exists():
+            varps_url = f"{self.base_url}/varps.json"
+            if not self._downloadFile(varps_url, varps_dest, decompress_gz=False):
+                success = False
 
         # Download varbits.json to varps directory
-        varbits_url = f"{self.base_url}/varbits.json"
         varbits_dest = self.metadata_cache_dir / "varbits.json"
-        if not self._downloadFile(varbits_url, varbits_dest, decompress_gz=False):
-            success = False
+        if not varbits_dest.exists():
+            varbits_url = f"{self.base_url}/varbits.json"
+            if not self._downloadFile(varbits_url, varbits_dest, decompress_gz=False):
+                success = False
 
         return success
 
