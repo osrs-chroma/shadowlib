@@ -30,194 +30,84 @@ class ResourceUpdater:
         self.project_root = Path(project_root)
         self.resources_dir = self.project_root / "data" / "resources"
 
-    def shouldUpdateVarps(self) -> Tuple[bool, str]:
+    def shouldUpdate(self) -> Tuple[bool, str]:
         """
-        Check if varps resource needs update.
+        Check if game data needs update.
 
         Returns:
             Tuple of (should_update, reason)
         """
-        from ..resources.varps import VarpsResource
+        from ..resources.game_data import GameDataResource
 
         try:
-            varps = VarpsResource()
+            game_data = GameDataResource()
             # Check if needs update (checks remote metadata)
-            if varps._needsUpdate():
-                return True, "Varps update available"
-            return False, "Varps up to date"
+            if game_data._needsUpdate():
+                return True, "Game data update available"
+            return False, "Game data up to date"
         except Exception as e:
-            return True, f"Varps check failed: {e}"
-
-    def shouldUpdateObjects(self) -> Tuple[bool, str]:
-        """
-        Check if objects database needs update.
-
-        Returns:
-            Tuple of (should_update, reason)
-        """
-        from ..resources.objects import ObjectsResource
-
-        try:
-            objects = ObjectsResource()
-            # Check if needs update (checks remote metadata)
-            if objects._needsUpdate():
-                return True, "Objects database update available"
-            return False, "Objects database up to date"
-        except Exception as e:
-            return True, f"Objects check failed: {e}"
-
-    def updateVarps(self, force: bool = False) -> bool:
-        """
-        Update varps resource.
-
-        Args:
-            force: Force update even if up to date
-
-        Returns:
-            True if successful
-        """
-        print("\n📦 Updating Varps resource...")
-
-        try:
-            from ..resources.varps import VarpsResource
-
-            varps = VarpsResource()
-            varps.ensureLoaded(force_update=force)
-            print("✅ Varps updated successfully")
-            return True
-
-        except Exception as e:
-            print(f"❌ Varps update failed: {e}")
-            import traceback
-
-            traceback.print_exc()
-            return False
-
-    def updateObjects(self, force: bool = False) -> bool:
-        """
-        Update objects database.
-
-        Args:
-            force: Force update even if up to date
-
-        Returns:
-            True if successful
-        """
-        print("\n📦 Updating Objects database...")
-
-        try:
-            from ..resources.objects import ObjectsResource
-
-            objects = ObjectsResource()
-            objects.ensureLoaded(force_update=force)
-            print("✅ Objects database updated successfully")
-            return True
-
-        except Exception as e:
-            print(f"❌ Objects update failed: {e}")
-            import traceback
-
-            traceback.print_exc()
-            return False
-
-    def shouldUpdateAny(self) -> Tuple[bool, str]:
-        """
-        Check if any resource needs update.
-
-        Returns:
-            Tuple of (should_update, reason)
-        """
-        needs_update = False
-        reasons = []
-
-        # Check varps
-        varps_update, varps_reason = self.shouldUpdateVarps()
-        if varps_update:
-            needs_update = True
-            reasons.append(f"Varps: {varps_reason}")
-
-        # Check objects
-        objects_update, objects_reason = self.shouldUpdateObjects()
-        if objects_update:
-            needs_update = True
-            reasons.append(f"Objects: {objects_reason}")
-
-        if needs_update:
-            return True, ", ".join(reasons)
-        return False, "All resources up to date"
+            return True, f"Game data check failed: {e}"
 
     def updateAll(self, force: bool = False) -> bool:
         """
-        Update all resources atomically.
+        Update all game data atomically.
 
-        This is an all-or-nothing operation - if any resource needs update,
-        ALL resources are updated together. This prevents desync issues
-        since varps and objects share metadata.json.
+        Downloads varps, varbits, and objects in one atomic operation
+        to prevent version mismatches.
 
         Args:
             force: Force update even if up to date
 
         Returns:
-            True if all updates successful
+            True if update successful
         """
         print("=" * 80)
-        print("🔄 Resource Auto-Updater")
+        print("🔄 Game Data Auto-Updater")
         print("=" * 80)
 
-        # Check if any resource needs update BEFORE updating any
+        # Check if update needed BEFORE downloading
         if not force:
-            needs_update, reason = self.shouldUpdateAny()
+            needs_update, reason = self.shouldUpdate()
             if not needs_update:
                 print(f"✅ {reason}")
                 print("=" * 80)
                 return True
             print(f"📦 {reason}")
 
-        success = True
+        print("\n🔄 Updating game data...")
 
-        # Update all resources together (atomic operation)
-        print("\n🔄 Updating all resources...")
+        try:
+            from ..resources.game_data import GameDataResource
 
-        # Update varps
-        if not self.updateVarps(force=force):
-            success = False
+            game_data = GameDataResource()
+            game_data.ensureLoaded(force_update=force)
 
-        # Update objects
-        if not self.updateObjects(force=force):
-            success = False
-
-        if success:
             print("\n" + "=" * 80)
-            print("✅ All resources updated successfully!")
+            print("✅ Game data updated successfully!")
             print("=" * 80)
-        else:
-            print("\n" + "=" * 80)
-            print("❌ Resource update failed - some resources may be out of sync")
-            print("=" * 80)
+            return True
 
-        return success
+        except Exception as e:
+            print(f"\n❌ Game data update failed: {e}")
+            import traceback
+
+            traceback.print_exc()
+            print("\n" + "=" * 80)
+            print("❌ Update failed")
+            print("=" * 80)
+            return False
 
     def status(self):
-        """Print current resource status."""
+        """Print current game data status."""
         print("=" * 80)
-        print("📊 Resource Status")
+        print("📊 Game Data Status")
         print("=" * 80)
 
-        # Check varps
-        print("\n🔹 Varps Resource:")
-        needs_update, reason = self.shouldUpdateVarps()
+        needs_update, reason = self.shouldUpdate()
         if needs_update:
-            print(f"   ⚠️  {reason}")
+            print(f"\n⚠️  {reason}")
         else:
-            print(f"   ✅ {reason}")
-
-        # Check objects
-        print("\n🔹 Objects Database:")
-        needs_update, reason = self.shouldUpdateObjects()
-        if needs_update:
-            print(f"   ⚠️  {reason}")
-        else:
-            print(f"   ✅ {reason}")
+            print(f"\n✅ {reason}")
 
         print("\n" + "=" * 80)
 

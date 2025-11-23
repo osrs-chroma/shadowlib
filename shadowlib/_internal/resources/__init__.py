@@ -4,52 +4,80 @@ OSRS Game Resources System
 Manages downloadable game data (varps, objects, NPCs, items, etc.)
 with automatic version checking and updates.
 
-Each resource type is lazy-loaded on first access and automatically
-checks for updates based on revision metadata.
+All game data is now managed by a single GameDataResource for atomic updates.
+Legacy VarpsResource and ObjectsResource are kept for backward compatibility.
 
 Example:
-    from src.resources import varps, objects
+    from shadowlib._internal.resources import getGameData
 
-    # Automatic version checking on first access
-    quest_points = varps.getVarpByName("quest_points")
+    # Get unified resource (recommended)
+    game_data = getGameData()
+    quest_points = game_data.getVarpByName("quest_points")
+    lumbridge_castle = game_data.getById(12345)
 
-    # Query objects database
-    lumbridge_castle = objects.getById(12345)
+    # Or use legacy APIs (backward compatible)
+    from shadowlib._internal.resources import getVarps, getObjects
+    varps = getVarps()
+    objects = getObjects()
 """
 
+from .game_data import GameDataResource
+
+# Keep old imports for backward compatibility (deprecated)
 from .objects import ObjectsResource
 from .varps import VarpsResource
 
-# Global singleton instances (lazy-loaded)
-_varps_instance = None
-_objects_instance = None
+# Global singleton instance
+_game_data_instance = None
 
 
-def getVarps() -> VarpsResource:
-    """Get the global varps resource manager."""
-    global _varps_instance
-    if _varps_instance is None:
-        _varps_instance = VarpsResource()
-    return _varps_instance
+def getGameData() -> GameDataResource:
+    """
+    Get the unified game data resource manager.
+
+    This is the recommended way to access game data.
+    Downloads all data atomically to prevent version mismatches.
+    """
+    global _game_data_instance
+    if _game_data_instance is None:
+        _game_data_instance = GameDataResource()
+    return _game_data_instance
 
 
-def getObjects() -> ObjectsResource:
-    """Get the global objects resource manager."""
-    global _objects_instance
-    if _objects_instance is None:
-        _objects_instance = ObjectsResource()
-    return _objects_instance
+# Backward compatibility: wrap GameDataResource for legacy code
+def getVarps() -> GameDataResource:
+    """
+    Get varps resource (legacy API, wraps GameDataResource).
+
+    Deprecated: Use getGameData() instead.
+    """
+    return getGameData()
 
 
-# Convenience: expose resource instances directly
-varps = getVarps()
-objects = getObjects()
+def getObjects() -> GameDataResource:
+    """
+    Get objects resource (legacy API, wraps GameDataResource).
+
+    Deprecated: Use getGameData() instead.
+    """
+    return getGameData()
+
+
+# Convenience: expose resource instance directly
+game_data = getGameData()
+
+# Legacy convenience (backward compatible)
+varps = game_data
+objects = game_data
 
 __all__ = [
+    "game_data",
     "varps",
     "objects",
-    "get_varps",
-    "get_objects",
-    "VarpsResource",
-    "ObjectsResource",
+    "getGameData",
+    "getVarps",
+    "getObjects",
+    "GameDataResource",
+    "VarpsResource",  # Kept for type hints
+    "ObjectsResource",  # Kept for type hints
 ]
