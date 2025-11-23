@@ -50,12 +50,8 @@ include = ["shadowlib*"]
 exclude = [
     "tests*",
     "docs*",
-    "shadowlib.generated.query_proxies",
-    "shadowlib.generated.constants",
-    "shadowlib.generated.constants.*",
 ]
 
-# Exclude large generated files from package data
 [tool.setuptools.package-data]
 shadowlib = [
     "py.typed",
@@ -74,7 +70,6 @@ exclude = [
     "dist",
     ".venv",
     "venv",
-    "shadowlib/generated/",  # Exclude generated code from linting
 ]
 
 [tool.ruff.lint]
@@ -161,7 +156,6 @@ omit = [
     "*/tests/*",
     "*/__pycache__/*",
     "*/site-packages/*",
-    "shadowlib/generated/*",  # Exclude generated code from coverage
 ]
 
 [tool.coverage.report]
