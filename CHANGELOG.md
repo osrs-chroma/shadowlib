@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.0](https://github.com/ShadowLib/shadowlib/compare/v1.0.1...v2.0.0) (2025-11-23)
+
+### ⚠ BREAKING CHANGES
+
+* Generated files and resources now stored in user cache
+directory instead of package directory. Old data/ folder no longer used.
+
+Changes:
+- Add centralized CacheManager for path management
+- Add dynamic loader for generated modules from cache
+- Update all components to use cache paths (resources, scraper, updater)
+- Fix circular imports with lazy-loading in query_builder
+- Update proxy generator to use absolute imports
+- Remove 7.5MB of generated files from package (84% size reduction)
+- Package size: 1.8MB -> 296KB
+
+Cache structure:
+~/.cache/shadowlib/
+├── generated/ (proxy classes, constants)
+└── data/ (objects DB, varps, API data)
+
+First import automatically downloads and generates all required files.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+### ✨ Features
+
+* migrate to XDG cache directory for generated files and resources ([c369c31](https://github.com/ShadowLib/shadowlib/commit/c369c319b83c87112a4619060f70b7a782604073))
+
 ## [1.0.1](https://github.com/ShadowLib/shadowlib/compare/v1.0.0...v1.0.1) (2025-11-22)
 
 ### 🐛 Bug Fixes
