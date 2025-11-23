@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.3](https://github.com/ShadowLib/shadowlib/compare/v2.0.2...v2.0.3) (2025-11-23)
+
+### 📚 Documentation
+
+* add release notes for v2.0.2 clean slate ([4e494c1](https://github.com/ShadowLib/shadowlib/commit/4e494c18222d1d7c20abd28a9f75a57365fd0d4b))
+
 ## 1.0.0 (2025-11-23)
 
 ### ⚠ BREAKING CHANGES
