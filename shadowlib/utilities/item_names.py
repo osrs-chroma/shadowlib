@@ -2,7 +2,7 @@
 Item name utilities for reverse lookup of ItemID constants.
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 # Lazy import from cache using generated loader
 ItemID = None  # Will be loaded on first use
@@ -15,7 +15,7 @@ class ItemNames:
     Lazy-loads the reverse mapping on first use.
     """
 
-    _id_to_name: Optional[Dict[int, str]] = None
+    _id_to_name: Dict[int, str] | None = None
 
     @classmethod
     def _buildLookup(cls) -> Dict[int, str]:
@@ -65,7 +65,7 @@ class ItemNames:
         return cls._id_to_name
 
     @classmethod
-    def getName(cls, item_id: int) -> Optional[str]:
+    def getName(cls, item_id: int) -> str | None:
         """
         Get the item name for a given item ID.
 
@@ -82,7 +82,7 @@ class ItemNames:
         return lookup.get(item_id)
 
     @classmethod
-    def getNames(cls, item_ids: List[int]) -> List[Optional[str]]:
+    def getNames(cls, item_ids: List[int]) -> List[str | None]:
         """
         Get item names for multiple item IDs.
 
@@ -100,7 +100,7 @@ class ItemNames:
         return [lookup.get(item_id) for item_id in item_ids]
 
     @classmethod
-    def getFormattedName(cls, item_id: int) -> Optional[str]:
+    def getFormattedName(cls, item_id: int) -> str | None:
         """
         Get a human-readable formatted name for an item ID.
 
@@ -127,7 +127,7 @@ class ItemNames:
         return formatted
 
     @classmethod
-    def getFormattedNames(cls, item_ids: List[int]) -> List[Optional[str]]:
+    def getFormattedNames(cls, item_ids: List[int]) -> List[str | None]:
         """
         Get formatted names for multiple item IDs.
 
@@ -145,7 +145,7 @@ class ItemNames:
 
 
 # Module-level convenience functions
-def getItemName(item_id: int) -> Optional[str]:
+def getItemName(item_id: int) -> str | None:
     """
     Get the item name for a given item ID.
 
@@ -162,7 +162,7 @@ def getItemName(item_id: int) -> Optional[str]:
     return ItemNames.getName(item_id)
 
 
-def getItemNames(item_ids: List[int]) -> List[Optional[str]]:
+def getItemNames(item_ids: List[int]) -> List[str | None]:
     """
     Get item names for multiple item IDs.
 
@@ -180,7 +180,7 @@ def getItemNames(item_ids: List[int]) -> List[Optional[str]]:
     return ItemNames.getNames(item_ids)
 
 
-def getFormattedItemName(item_id: int) -> Optional[str]:
+def getFormattedItemName(item_id: int) -> str | None:
     """
     Get a human-readable formatted name for an item ID.
 
@@ -200,7 +200,7 @@ def getFormattedItemName(item_id: int) -> Optional[str]:
     return ItemNames.getFormattedName(item_id)
 
 
-def getFormattedItemNames(item_ids: List[int]) -> List[Optional[str]]:
+def getFormattedItemNames(item_ids: List[int]) -> List[str | None]:
     """
     Get formatted names for multiple item IDs.
 

@@ -6,7 +6,8 @@ Now with Pythonic extensions for forEach, filter, map, and conditionals
 """
 
 import json
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Union
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Union
 
 if TYPE_CHECKING:
     from .api import RuneLiteAPI
@@ -248,7 +249,7 @@ class PluginProxy:
         self.query = query
         self.class_name = class_name
         self.plugin_name = plugin_name
-        self._plugin_ref: Optional[QueryRef] = None
+        self._plugin_ref: QueryRef | None = None
 
     def _getPluginRef(self) -> "QueryRef":
         """
@@ -346,7 +347,7 @@ class QueryRef:
         query: "Query",
         ref_id: str,
         source_ref: Optional["QueryRef"] = None,
-        return_type: Optional[str] = None,
+        return_type: str | None = None,
     ):
         """
         Initialize a QueryRef.
@@ -812,7 +813,7 @@ class QueryRef:
 
         return new_ref
 
-    def _calculateResultType(self, dimensions: List[Dict]) -> Optional[str]:
+    def _calculateResultType(self, dimensions: List[Dict]) -> str | None:
         """
         Calculate the return type based on dimension operations.
 
@@ -829,7 +830,7 @@ class QueryRef:
             # For now, keep original type - C will handle dimension reduction
             return self.return_type
 
-    def _getFinalElementType(self, dimensions: int) -> Optional[str]:
+    def _getFinalElementType(self, dimensions: int) -> str | None:
         """
         Get the element type after indexing N dimensions.
 
@@ -856,7 +857,7 @@ class QueryRef:
 
         return type_str if type_str != self.return_type else None
 
-    def _getElementType(self) -> Optional[str]:
+    def _getElementType(self) -> str | None:
         """
         Extract element type from array type (one dimension).
         E.g., "net.runelite.api.Player[]" -> "net.runelite.api.Player"
@@ -1115,7 +1116,7 @@ class Query:
         self.dependency_graph: Dict[str, Set[str]] = {}  # Maps ref to its dependencies
 
         # Template caching
-        self.template_id: Optional[str] = None
+        self.template_id: str | None = None
         self.use_template: bool = True  # Enable template caching by default
 
         # Lambda compiler for Pythonic operations
@@ -1270,7 +1271,7 @@ class Query:
 
     def _detectGetitemPattern(
         self, operations: List[Dict[str, Any]], start_idx: int
-    ) -> Optional[Dict]:
+    ) -> Dict | None:
         """
         Detect getItem loop pattern starting at given index.
         Returns pattern info if found, None otherwise.
@@ -1586,7 +1587,7 @@ class Query:
             return getattr(self._class_accessor, name)
         raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
 
-    def execute(self, selections: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def execute(self, selections: Dict[str, Any] | None = None) -> Dict[str, Any]:
         """
         Execute the built query with optional selections.
         With optimization enabled, this will eliminate dead code and reorder operations.
@@ -1875,8 +1876,8 @@ class Query:
 
     def forEach(
         self,
-        array_ref: Union[QueryRef, Any],
-        transform_func: Optional[Callable] = None,
+        array_ref: QueryRef | Any,
+        transform_func: Callable | None = None,
         skip_nulls: bool = True,
     ) -> QueryRef:
         """

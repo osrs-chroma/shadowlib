@@ -9,7 +9,7 @@ import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 
 @dataclass
@@ -19,7 +19,7 @@ class MethodInfo:
     name: str
     signature: str
     return_type: str
-    generic_return_type: Optional[str] = None  # Full generic type like "List<Player>"
+    generic_return_type: str | None = None  # Full generic type like "List<Player>"
     params: List[str] = field(default_factory=list)
 
 
@@ -39,7 +39,7 @@ class EfficientRuneLiteScraper:
 
     def __init__(self):
         self.methods: Dict[
-            str, List[Tuple[str, str, Optional[str]]]
+            str, List[Tuple[str, str, str | None]]
         ] = {}  # method_name -> [(class, signature, generic_type)]
         self.enums: Dict[str, EnumInfo] = {}
         self.classes: Set[str] = set()
@@ -1019,7 +1019,7 @@ class EfficientRuneLiteScraper:
 
         return child_to_parent, parent_to_children
 
-    def _getFullClassPath(self, simple_name: str) -> Optional[str]:
+    def _getFullClassPath(self, simple_name: str) -> str | None:
         """
         Convert simple class name to full JNI path.
 
@@ -1102,7 +1102,7 @@ class EfficientRuneLiteScraper:
 
             for sig_info in signatures:
                 # Validate signature format (can be tuple or list)
-                if not isinstance(sig_info, (list, tuple)) or len(sig_info) < 2:
+                if not isinstance(sig_info, list | tuple) or len(sig_info) < 2:
                     resolution_stats["skipped"] += 1
                     invalid_signatures.append(sig_info)
                     continue
@@ -1451,7 +1451,7 @@ class EfficientRuneLiteScraper:
             f"📊 Type conversion database: {len(type_conversion_db['all_types'])} types with perfect mapping!"
         )
 
-    def getSignature(self, method_name: str, class_hint: Optional[str] = None) -> Optional[str]:
+    def getSignature(self, method_name: str, class_hint: str | None = None) -> str | None:
         """
         Get JNI signature for a method
         """

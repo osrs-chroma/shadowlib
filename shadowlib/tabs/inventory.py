@@ -2,7 +2,7 @@
 Inventory tab module.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from shadowlib.utilities.geometry import createGrid
 from shadowlib.utilities.item_names import getFormattedItemName, getItemName
@@ -135,7 +135,7 @@ class Inventory(GameTabs):
         result = []
         name_func = getFormattedItemName if formatted else getItemName
 
-        for slot, (item_id, quantity) in enumerate(zip(ids, quantities)):
+        for slot, (item_id, quantity) in enumerate(zip(ids, quantities, strict=False)):
             result.append(
                 {
                     "slot": slot,
@@ -299,9 +299,7 @@ class Inventory(GameTabs):
         items = self.getItemIds()
         return sum(1 for item in items if item == -1)
 
-    def hoverItem(
-        self, item_id: int, slot_index: Optional[int] = None, duration: float = 0.2
-    ) -> bool:
+    def hoverItem(self, item_id: int, slot_index: int | None = None, duration: float = 0.2) -> bool:
         """
         Hover over an item in the inventory.
 
@@ -364,7 +362,7 @@ class Inventory(GameTabs):
     def clickItem(
         self,
         item_id: int,
-        slot_index: Optional[int] = None,
+        slot_index: int | None = None,
         button: str = "left",
         duration: float = 0.2,
     ) -> bool:
@@ -597,7 +595,7 @@ class Inventory(GameTabs):
         return dropped_count
 
     def selectItem(
-        self, item_id: int, slot_index: Optional[int] = None, duration: float = 0.2
+        self, item_id: int, slot_index: int | None = None, duration: float = 0.2
     ) -> bool:
         """
         Select an item in the inventory (for 'Use item on...' actions).
@@ -641,8 +639,8 @@ class Inventory(GameTabs):
         self,
         item1_id: int,
         item2_id: int,
-        item1_slot: Optional[int] = None,
-        item2_slot: Optional[int] = None,
+        item1_slot: int | None = None,
+        item2_slot: int | None = None,
         duration: float = 0.2,
     ) -> bool:
         """

@@ -11,7 +11,7 @@ import time
 import urllib.request
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from ..cache_manager import getCacheManager
 
@@ -134,7 +134,7 @@ class BaseResource(ABC):
             print(f"❌ Failed to download {url}: {e}")
             return False
 
-    def _getLocalMetadata(self) -> Optional[Dict[str, Any]]:
+    def _getLocalMetadata(self) -> Dict[str, Any] | None:
         """Get locally cached metadata."""
         metadata_file = self.metadata_cache_dir / "metadata.json"
         if metadata_file.exists():
@@ -145,7 +145,7 @@ class BaseResource(ABC):
                 print(f"⚠️  Failed to load local metadata: {e}")
         return None
 
-    def _getRemoteMetadata(self) -> Optional[Dict[str, Any]]:
+    def _getRemoteMetadata(self) -> Dict[str, Any] | None:
         """Fetch remote metadata to check current revision."""
         url = f"{self.base_url}/metadata.json"
         try:
@@ -273,7 +273,7 @@ class BaseResource(ABC):
         print(f"🔄 Forcing fresh download for {self.resource_type}...")
         self.ensureLoaded(forceUpdate=True)
 
-    def getRevision(self) -> Optional[str]:
+    def getRevision(self) -> str | None:
         """
         Get current local revision/cache_id.
 
@@ -285,7 +285,7 @@ class BaseResource(ABC):
             return meta.get("cache_id") or meta.get("revision")
         return None
 
-    def getMetadata(self) -> Optional[Dict[str, Any]]:
+    def getMetadata(self) -> Dict[str, Any] | None:
         """
         Get full metadata for this resource.
 

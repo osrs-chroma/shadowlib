@@ -7,7 +7,7 @@ separately from RuneLite API updates.
 """
 
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Tuple
 
 
 class ResourceUpdater:
@@ -15,7 +15,7 @@ class ResourceUpdater:
     Manages automatic updates for game resources (varps, objects, etc.)
     """
 
-    def __init__(self, project_root: Optional[Path] = None):
+    def __init__(self, project_root: Path | None = None):
         """
         Initialize resource updater.
 

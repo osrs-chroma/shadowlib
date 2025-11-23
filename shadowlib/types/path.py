@@ -3,7 +3,7 @@ Path and obstacle types for navigation.
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from .packed_position import PackedPosition
 
@@ -26,8 +26,8 @@ class PathObstacle:
     dest: PackedPosition
     type: str
     duration: int
-    displayInfo: Optional[str]
-    objectInfo: Optional[str]
+    displayInfo: str | None
+    objectInfo: str | None
 
     @classmethod
     def fromDict(cls, data: Dict[str, Any]) -> "PathObstacle":
@@ -113,15 +113,15 @@ class Path:
         """Check if path is empty."""
         return len(self._tiles) == 0
 
-    def getStart(self) -> Optional[PackedPosition]:
+    def getStart(self) -> PackedPosition | None:
         """Get start position."""
         return self._tiles[0] if self._tiles else None
 
-    def getEnd(self) -> Optional[PackedPosition]:
+    def getEnd(self) -> PackedPosition | None:
         """Get end position (destination)."""
         return self._tiles[-1] if self._tiles else None
 
-    def getNextTile(self, current: PackedPosition) -> Optional[PackedPosition]:
+    def getNextTile(self, current: PackedPosition) -> PackedPosition | None:
         """
         Get next tile from current position.
 
@@ -139,7 +139,7 @@ class Path:
             pass
         return None
 
-    def getObstacleAt(self, position: PackedPosition) -> Optional[PathObstacle]:
+    def getObstacleAt(self, position: PackedPosition) -> PathObstacle | None:
         """
         Get obstacle at position (if any).
 

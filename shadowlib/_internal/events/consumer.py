@@ -15,7 +15,6 @@ import os
 import threading
 import time
 from collections import defaultdict
-from typing import Optional
 
 import msgpack
 from inotify_simple import INotify
@@ -58,10 +57,10 @@ class EventConsumer:
 
         # Thread control
         self.running = False
-        self.thread: Optional[threading.Thread] = None
+        self.thread: threading.Thread | None = None
 
         # Inotify setup
-        self.inotify: Optional[INotify] = None
+        self.inotify: INotify | None = None
         self._setupInotify()
 
     def _setupInotify(self) -> None:

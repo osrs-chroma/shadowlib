@@ -6,7 +6,7 @@ Wraps StateBuilder with thread safety and provides clean public methods.
 
 import threading
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from shadowlib.utilities.timing import waitUntil
 
@@ -68,7 +68,7 @@ class EventCache:
         with self._lock:
             return self._state.latest_states.get("gametick", {}).copy()
 
-    def getRecentEvents(self, channel: str, n: Optional[int] = None) -> List[Dict[str, Any]]:
+    def getRecentEvents(self, channel: str, n: int | None = None) -> List[Dict[str, Any]]:
         """
         Get recent events from ring buffer channel.
 
@@ -151,24 +151,24 @@ class EventCache:
 
     # Convenience properties for common gametick state fields
     @property
-    def tick(self) -> Optional[int]:
+    def tick(self) -> int | None:
         """Get current game tick from latest gametick state."""
         gametick = self._state.latest_states.get("gametick", {})
         return gametick.get("tick")
 
     @property
-    def energy(self) -> Optional[int]:
+    def energy(self) -> int | None:
         """Get current run energy (0-10000) from latest gametick state."""
         gametick = self._state.latest_states.get("gametick", {})
         return gametick.get("energy")
 
     @property
-    def position(self) -> Optional[Dict[str, int]]:
+    def position(self) -> Dict[str, int] | None:
         """Get current player position {x, y, plane} from latest gametick state."""
         gametick = self._state.latest_states.get("gametick", {})
         return gametick.get("position")
 
-    def getVarp(self, varp_id: int) -> Optional[int]:
+    def getVarp(self, varp_id: int) -> int | None:
         """
         Get current value of a varp from cache.
 
@@ -235,7 +235,7 @@ class EventCache:
         with self._lock:
             return self._state.bank_open
 
-    def getSkill(self, skill_name: str) -> Optional[Dict[str, int]]:
+    def getSkill(self, skill_name: str) -> Dict[str, int] | None:
         """
         Get skill level and XP.
 

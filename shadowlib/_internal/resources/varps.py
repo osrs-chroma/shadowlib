@@ -5,7 +5,7 @@ Handles downloading and querying varp/varbit definitions with automatic updates.
 """
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from .base import BaseResource
 
@@ -62,7 +62,7 @@ class VarpsResource(BaseResource):
             print(f"❌ Failed to load varp/varbit data: {e}")
             raise
 
-    def getVarpValue(self, varp_id: int) -> Optional[int]:
+    def getVarpValue(self, varp_id: int) -> int | None:
         """
         Get the current value of a varp from the event cache.
 
@@ -102,7 +102,7 @@ class VarpsResource(BaseResource):
         mask = (1 << num_bits) - 1
         return (value >> start_bit) & mask
 
-    def getVarbitInfo(self, varbit_id: int) -> Optional[Dict[str, Any]]:
+    def getVarbitInfo(self, varbit_id: int) -> Dict[str, Any] | None:
         """
         Get metadata about a varbit (which varp it belongs to, bit positions).
 
@@ -133,7 +133,7 @@ class VarpsResource(BaseResource):
             "name": varbit_info.get("name", f"varbit_{varbit_id}"),
         }
 
-    def getVarpByName(self, name: str) -> Optional[int]:
+    def getVarpByName(self, name: str) -> int | None:
         """
         Get a varp value by name.
 
@@ -161,7 +161,7 @@ class VarpsResource(BaseResource):
         print(f"❌ Varp '{name}' not found")
         return None
 
-    def getVarpByIndex(self, varp_id: int) -> Optional[int]:
+    def getVarpByIndex(self, varp_id: int) -> int | None:
         """
         Get a varp value by its index.
 
@@ -178,7 +178,7 @@ class VarpsResource(BaseResource):
         self.ensureLoaded()
         return self.getVarpValue(varp_id)
 
-    def getVarbitByIndex(self, varbit_id: int) -> Optional[int]:
+    def getVarbitByIndex(self, varbit_id: int) -> int | None:
         """
         Get a varbit value by its index.
 
@@ -220,7 +220,7 @@ class VarpsResource(BaseResource):
 
         return self.extractBits(varp_value, start_bit, end_bit)
 
-    def getVarbitByName(self, name: str) -> Optional[int]:
+    def getVarbitByName(self, name: str) -> int | None:
         """
         Get a varbit value by name.
 
@@ -248,7 +248,7 @@ class VarpsResource(BaseResource):
         print(f"❌ Varbit '{name}' not found")
         return None
 
-    def listVarps(self, filter_name: Optional[str] = None) -> Dict[int, Dict[str, Any]]:
+    def listVarps(self, filter_name: str | None = None) -> Dict[int, Dict[str, Any]]:
         """
         List all available varps, optionally filtered by name.
 
@@ -272,7 +272,7 @@ class VarpsResource(BaseResource):
 
         return {int(k): v for k, v in self._varps_data.items()}
 
-    def listVarbits(self, filter_name: Optional[str] = None) -> Dict[int, Dict[str, Any]]:
+    def listVarbits(self, filter_name: str | None = None) -> Dict[int, Dict[str, Any]]:
         """
         List all available varbits, optionally filtered by name.
 

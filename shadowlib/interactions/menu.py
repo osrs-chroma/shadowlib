@@ -4,7 +4,7 @@ Menu module - handles right-click context menu interactions.
 
 import re
 import time
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from shadowlib.globals import getClient
 
@@ -276,7 +276,7 @@ class Menu:
 
         return formatted_options
 
-    def getDefaultOption(self, strip_colors: bool = True) -> Optional[str]:
+    def getDefaultOption(self, strip_colors: bool = True) -> str | None:
         """
         Get the default menu option (the one accessible with left-click).
 
@@ -325,7 +325,7 @@ class Menu:
 
         return any(option_text_lower in option.lower() for option in options)
 
-    def getOptionArea(self, option_index: int) -> Optional[Area]:
+    def getOptionArea(self, option_index: int) -> Area | None:
         """
         Get the clickable area for a specific menu option.
 

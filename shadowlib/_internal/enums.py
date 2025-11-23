@@ -5,7 +5,7 @@ Provides type-safe enum objects that prevent int/enum confusion
 """
 
 import json
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Type
 
 
 class EnumValue:
@@ -99,7 +99,7 @@ class EnumMeta(type):
             raise TypeError(f"Invalid key type: {type(key)}")
 
 
-def createEnumClass(enum_name: str, values: list, value_map: Optional[Dict] = None) -> Type:
+def createEnumClass(enum_name: str, values: list, value_map: Dict | None = None) -> Type:
     """
     Create a single enum class from scraped data
     """
@@ -170,7 +170,7 @@ def generateAllEnumClasses(api_data: Dict) -> Dict[str, Type]:
     return enum_classes
 
 
-def loadEnumsFromFile(api_data_file: Optional[str] = None) -> Dict[str, Type]:
+def loadEnumsFromFile(api_data_file: str | None = None) -> Dict[str, Type]:
     """
     Load enum classes from the API data file
     """
@@ -220,7 +220,7 @@ __all__ = [
 
 
 # Provide convenient access to common enums (if they exist)
-def getEnum(enum_name: str) -> Optional[Type]:
+def getEnum(enum_name: str) -> Type | None:
     """Get an enum class by name"""
     return _enum_classes.get(enum_name)
 

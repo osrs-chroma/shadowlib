@@ -2,7 +2,7 @@
 Skills tab module.
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from .gametab import GameTab, GameTabs
 
@@ -51,7 +51,7 @@ class Skills(GameTabs):
             client: Optional Client instance. If None, uses global Client.
         """
         super().__init__(client)
-        self._last_total_xp: Optional[int] = None
+        self._last_total_xp: int | None = None
 
     def _getSkillData(self, skill_name: str) -> Dict[str, int]:
         """

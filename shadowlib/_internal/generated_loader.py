@@ -7,7 +7,7 @@ by adding it to sys.path and providing lazy-loading utilities.
 
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 
 def ensureGeneratedInPath() -> Path:
@@ -30,7 +30,7 @@ def ensureGeneratedInPath() -> Path:
     return generated_dir
 
 
-def loadGeneratedModule(module_name: str) -> Optional[Any]:
+def loadGeneratedModule(module_name: str) -> Any | None:
     """
     Load a generated module from cache.
 
@@ -56,7 +56,7 @@ def loadGeneratedModule(module_name: str) -> Optional[Any]:
         return None
 
 
-def reloadGeneratedModule(module_name: str) -> Optional[Any]:
+def reloadGeneratedModule(module_name: str) -> Any | None:
     """
     Reload a generated module (useful after regeneration).
 

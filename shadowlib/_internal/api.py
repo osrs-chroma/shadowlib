@@ -10,7 +10,7 @@ import mmap
 import os
 import struct
 import time
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Type
 
 if TYPE_CHECKING:
     # For type checkers: always import Query (tells VS Code what type to expect)
@@ -366,8 +366,8 @@ class RuneLiteAPI:
         return []
 
     def getMethodSignature(
-        self, method_name: str, args: Optional[List] = None, target_class: str = "Client"
-    ) -> Optional[str]:
+        self, method_name: str, args: List | None = None, target_class: str = "Client"
+    ) -> str | None:
         """
         Get the correct JNI signature for a method based on arguments.
         Now delegates to get_method_info for consistency.
@@ -376,8 +376,8 @@ class RuneLiteAPI:
         return info["signature"] if info else None
 
     def getMethodInfo(
-        self, method_name: str, args: Optional[List] = None, target_class: str = "Client"
-    ) -> Optional[dict]:
+        self, method_name: str, args: List | None = None, target_class: str = "Client"
+    ) -> dict | None:
         """
         Get both the signature AND declaring class for a method.
         Returns dict with 'signature', 'declaring_class', and 'return_type'.
@@ -458,7 +458,7 @@ class RuneLiteAPI:
             return -1
 
         score = 0
-        for arg, param_type in zip(args, param_types):
+        for arg, param_type in zip(args, param_types, strict=False):
             arg_score = self._scoreArgMatch(arg, param_type)
             if arg_score < 0:
                 return -1  # Invalid match
@@ -616,14 +616,14 @@ class RuneLiteAPI:
 
     def getStaticMethodSignature(
         self, class_name: str, method_name: str, args: tuple
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Get static method signature.
         Uses regular method signature lookup since format is the same.
         """
         return self.getMethodSignature(method_name, args, target_class=class_name.split(".")[-1])
 
-    def getEnumValue(self, enum_name: str, ordinal: int) -> Optional[str]:
+    def getEnumValue(self, enum_name: str, ordinal: int) -> str | None:
         """Get enum constant name from ordinal using perfect data"""
         if "type_conversion" in self.api_data:
             # Search for enum in all packages
@@ -633,7 +633,7 @@ class RuneLiteAPI:
                     return enum_info.get("ordinal_to_name", {}).get(ordinal)
         return None
 
-    def getEnumOrdinal(self, enum_name: str, value_name: str) -> Optional[int]:
+    def getEnumOrdinal(self, enum_name: str, value_name: str) -> int | None:
         """Get enum ordinal from constant name using perfect data"""
         if "type_conversion" in self.api_data:
             # Search for enum in all packages
@@ -643,7 +643,7 @@ class RuneLiteAPI:
                     return enum_info.get("name_to_ordinal", {}).get(value_name.upper())
         return None
 
-    def getEnum(self, enum_name: str) -> Optional[Type]:
+    def getEnum(self, enum_name: str) -> Type | None:
         """Get an enum class by name"""
         return self.enum_classes.get(enum_name)
 
@@ -694,7 +694,7 @@ class RuneLiteAPI:
         self.api_channel.seek(0)
         self.api_channel.write(struct.pack("<II", 1, 0))  # pending=1, ready=0
 
-    def _waitForResponse(self, timeout_ms: int = 10000) -> Optional[bytes]:
+    def _waitForResponse(self, timeout_ms: int = 10000) -> bytes | None:
         """
         Wait for response from bridge with exponential backoff polling.
 
@@ -835,7 +835,7 @@ class RuneLiteAPI:
         target: str,
         method: str,
         signature: str,
-        args: Optional[List[Any]] = None,
+        args: List[Any] | None = None,
         async_exec: bool = False,
     ) -> Any:
         """

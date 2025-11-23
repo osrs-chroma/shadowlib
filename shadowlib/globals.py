@@ -24,12 +24,10 @@ Usage patterns:
             self.client = client or getClient()  # Use passed OR global
 """
 
-from typing import Optional
-
 from shadowlib._internal.api import RuneLiteAPI
 
 # Global instances
-_global_api: Optional[RuneLiteAPI] = None
+_global_api: RuneLiteAPI | None = None
 _global_client = None  # Forward reference, actual Client class imported later
 _resources_checked = False  # Track if we've checked resources this session
 

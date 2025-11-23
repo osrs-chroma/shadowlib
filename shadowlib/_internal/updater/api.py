@@ -11,7 +11,7 @@ import urllib.error
 import urllib.request
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 
 
 class RuneLiteAPIUpdater:
@@ -23,7 +23,7 @@ class RuneLiteAPIUpdater:
     4. Tracks versions to avoid unnecessary work
     """
 
-    def __init__(self, project_root: Optional[Path] = None):
+    def __init__(self, project_root: Path | None = None):
         """
         Initialize updater.
 
@@ -49,7 +49,7 @@ class RuneLiteAPIUpdater:
         # Ensure data directory exists
         self.data_dir.mkdir(parents=True, exist_ok=True)
 
-    def getCurrentVersion(self) -> Optional[Dict]:
+    def getCurrentVersion(self) -> Dict | None:
         """Get currently installed version info"""
         if not self.version_file.exists():
             return None
@@ -61,7 +61,7 @@ class RuneLiteAPIUpdater:
             print(f"⚠️  Could not read version file: {e}")
             return None
 
-    def getLatestGithubVersion(self) -> Optional[Dict]:
+    def getLatestGithubVersion(self) -> Dict | None:
         """
         Get latest commit info from GitHub.
 
@@ -131,7 +131,7 @@ class RuneLiteAPIUpdater:
 
         return False, "Up to date"
 
-    def downloadRuneliteSource(self) -> Optional[Path]:
+    def downloadRuneliteSource(self) -> Path | None:
         """
         Download RuneLite source code to temporary location.
         Files will be cleaned up automatically after scraping.

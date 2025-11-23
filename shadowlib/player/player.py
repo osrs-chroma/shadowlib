@@ -4,7 +4,7 @@ Player state middleware.
 Provides clean access to player properties via cache.
 """
 
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict
 
 if TYPE_CHECKING:
     from ..client import Client
@@ -117,7 +117,7 @@ class Player:
         dy = abs(self.y - y)
         return max(dx, dy)
 
-    def isAt(self, x: int, y: int, plane: Optional[int] = None) -> bool:
+    def isAt(self, x: int, y: int, plane: int | None = None) -> bool:
         """
         Check if player is at specific coordinates.
 
@@ -138,7 +138,7 @@ class Player:
 
         return not (plane is not None and self.plane != plane)
 
-    def isNearby(self, x: int, y: int, radius: int, plane: Optional[int] = None) -> bool:
+    def isNearby(self, x: int, y: int, radius: int, plane: int | None = None) -> bool:
         """
         Check if player is within radius of coordinates.
 

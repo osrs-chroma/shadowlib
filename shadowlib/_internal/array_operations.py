@@ -3,7 +3,7 @@ Direct array operations for MessagePack protocol
 Efficient forEach, filter, and map without JSON conversion
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import msgpack
 
@@ -13,7 +13,7 @@ class ArrayOperation:
 
     @staticmethod
     def forEach(
-        target_ref: str, method: str, collect: bool = True, signature: Optional[str] = None
+        target_ref: str, method: str, collect: bool = True, signature: str | None = None
     ) -> Dict[str, Any]:
         """
         Create a forEach operation.
@@ -48,8 +48,8 @@ class ArrayOperation:
     def filter(
         target_ref: str,
         method: str = "getId",
-        value: Optional[int] = None,
-        not_equal: Optional[int] = None,
+        value: int | None = None,
+        not_equal: int | None = None,
     ) -> Dict[str, Any]:
         """
         Create a filter operation.
@@ -79,9 +79,7 @@ class ArrayOperation:
         return {"type": "filter", "target": target_ref, "condition": condition}
 
     @staticmethod
-    def mapTransform(
-        target_ref: str, method: str, signature: Optional[str] = None
-    ) -> Dict[str, Any]:
+    def mapTransform(target_ref: str, method: str, signature: str | None = None) -> Dict[str, Any]:
         """
         Create a map operation to transform array elements.
 

@@ -3,8 +3,6 @@ Main Client class for advanced users who want explicit control.
 Most users won't need this - they can use the module-level functions directly.
 """
 
-from typing import Optional
-
 from shadowlib._internal.api import RuneLiteAPI
 
 
@@ -26,7 +24,7 @@ class Client:
         client.getBank().depositAll()
     """
 
-    def __init__(self, api: Optional[RuneLiteAPI] = None):
+    def __init__(self, api: RuneLiteAPI | None = None):
         """
         Initialize client with optional custom API instance.
 

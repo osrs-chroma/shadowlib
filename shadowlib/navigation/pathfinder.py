@@ -2,7 +2,7 @@
 Pathfinder for navigation.
 """
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from ..types.packed_position import PackedPosition
 from ..types.path import Path
@@ -29,7 +29,7 @@ class Pathfinder:
         destination_y: int,
         destination_plane: int,
         use_transport: bool = True,
-    ) -> Optional[Path]:
+    ) -> Path | None:
         """
         Calculate path to destination.
 
@@ -73,7 +73,7 @@ class Pathfinder:
         destination_y: int,
         destination_plane: int,
         use_transport: bool = True,
-    ) -> Optional[Path]:
+    ) -> Path | None:
         """
         Calculate path from specific start position to destination.
 

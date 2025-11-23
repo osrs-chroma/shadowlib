@@ -2,7 +2,8 @@
 GroundItemList type with fluent filtering.
 """
 
-from typing import Callable, List, Optional
+from collections.abc import Callable
+from typing import List
 
 from .ground_item import GroundItem
 from .packed_position import PackedPosition
@@ -194,7 +195,7 @@ class GroundItemList:
         sorted_items = sorted(self._items, key=lambda item: item.quantity, reverse=reverse)
         return GroundItemList(sorted_items)
 
-    def first(self) -> Optional[GroundItem]:
+    def first(self) -> GroundItem | None:
         """
         Get first item in list.
 
@@ -206,7 +207,7 @@ class GroundItemList:
         """
         return self._items[0] if self._items else None
 
-    def last(self) -> Optional[GroundItem]:
+    def last(self) -> GroundItem | None:
         """
         Get last item in list.
 

@@ -11,7 +11,7 @@ Positions are stored as packed 32-bit integers:
 """
 
 import sqlite3
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 from ..utils.packed_position import packPositionSigned, unpackPosition
 from .base import BaseResource
@@ -102,7 +102,7 @@ class ObjectsResource(BaseResource):
         if self._db_connection is None:
             raise RuntimeError("Objects database connection not established")
 
-    def getById(self, object_id: int) -> Optional[Dict[str, Any]]:
+    def getById(self, object_id: int) -> Dict[str, Any] | None:
         """
         Get object definition by ID.
 

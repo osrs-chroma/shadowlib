@@ -4,7 +4,6 @@ Banking module - handles all banking operations.
 
 import math
 import random
-from typing import Optional
 
 from shadowlib.globals import getClient
 from shadowlib.utilities import timing
@@ -127,7 +126,7 @@ class Bank:
         cache = self._updateCache(max_age)
         return cache["items"], cache["quantities"]
 
-    def getOpenTab(self) -> Optional[int]:
+    def getOpenTab(self) -> int | None:
         """
         Get currently open bank tab.
 
@@ -247,7 +246,7 @@ class Bank:
             counts.append(self.getItemcountInTab(i))
         return counts
 
-    def getIndex(self, item_id: int) -> Optional[int]:
+    def getIndex(self, item_id: int) -> int | None:
         items, _ = self.getAllItems()
 
         if item_id not in items:
@@ -255,7 +254,7 @@ class Bank:
 
         return items.index(item_id)
 
-    def getItemArea(self, item_id: int) -> Optional[Area]:
+    def getItemArea(self, item_id: int) -> Area | None:
         index = self.getIndex(item_id)
 
         if index is None:
@@ -319,7 +318,7 @@ class Bank:
             k = random.randint(k_min, k_max)
             return k, scroll_up
 
-    def makeItemVisible(self, item_id: int) -> Optional[Area]:
+    def makeItemVisible(self, item_id: int) -> Area | None:
         items, quantities = self.getAllItems()
 
         if item_id not in items:
@@ -360,7 +359,7 @@ class Bank:
         else:
             return None
 
-    def getTabIndex(self, item_id: int) -> Optional[int]:
+    def getTabIndex(self, item_id: int) -> int | None:
         index = self.getIndex(item_id)
 
         if index is None:

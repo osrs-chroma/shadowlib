@@ -8,7 +8,7 @@ of tick queries and monitors even when scripts error or exit unexpectedly.
 import atexit
 import functools
 import sys
-from typing import Callable
+from collections.abc import Callable
 
 # Global tracking of resources that need cleanup
 _registered_apis = []

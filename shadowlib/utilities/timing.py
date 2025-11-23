@@ -4,7 +4,8 @@ Timing utilities - delays, waits, retries.
 
 import random
 import time
-from typing import Any, Callable, Optional, Tuple
+from collections.abc import Callable
+from typing import Any, Tuple
 
 import shadowlib.globals as globals
 
@@ -43,7 +44,7 @@ def waitTicks(ticks: int, tickDuration: float = 0.6):
         time.sleep(0.01)
 
 
-def sleep(min_seconds: float, max_seconds: Optional[float] = None):
+def sleep(min_seconds: float, max_seconds: float | None = None):
     """
     Sleep for a random duration between min and max seconds.
     If max not provided, sleeps for exactly min_seconds.
@@ -101,7 +102,7 @@ def retry(
     max_attempts: int = 3,
     delay: float = 1.0,
     exponential_backoff: bool = False,
-) -> Optional[Any]:
+) -> Any | None:
     """
     Retry a function multiple times if it fails.
 

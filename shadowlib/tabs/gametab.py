@@ -3,7 +3,6 @@ Base GameTab class - parent class for all game tab modules.
 """
 
 from enum import Enum
-from typing import Optional
 
 from shadowlib.globals import getClient
 from shadowlib.utilities.geometry import Area
@@ -37,7 +36,7 @@ class GameTabs:
     """
 
     # Subclasses must override this
-    TAB_TYPE: Optional[GameTab] = None
+    TAB_TYPE: GameTab | None = None
 
     def __init__(self, client=None):
         """
@@ -77,7 +76,7 @@ class GameTabs:
         # Swap index 8 and 9 because the game is weird
         self.tab_box_array[8], self.tab_box_array[9] = self.tab_box_array[9], self.tab_box_array[8]
 
-    def getOpenTab(self) -> Optional[GameTab]:
+    def getOpenTab(self) -> GameTab | None:
         """Get the currently open tab."""
         index = self.client.cache["open_tab"]
         return GameTab(index) if index in GameTab._value2member_map_ else None

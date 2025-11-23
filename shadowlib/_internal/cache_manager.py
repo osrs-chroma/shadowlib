@@ -6,13 +6,12 @@ Uses ~/.cache/shadowlib/ for all generated files and resources following XDG Bas
 
 import os
 from pathlib import Path
-from typing import Optional
 
 
 class CacheManager:
     """Manages cache directories for ShadowLib resources and generated files."""
 
-    def __init__(self, base_path: Optional[Path] = None):
+    def __init__(self, base_path: Path | None = None):
         """
         Initialize cache manager.
 
@@ -106,7 +105,7 @@ class CacheManager:
 
 
 # Global cache manager instance
-_cache_manager: Optional[CacheManager] = None
+_cache_manager: CacheManager | None = None
 
 
 def getCacheManager() -> CacheManager:
