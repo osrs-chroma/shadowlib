@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "shadowlib"
-version = "2.0.0"
+version = "1.0.0"
 description = "OSRS Bot Development SDK with game-native structure"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -68,7 +68,7 @@ shadowlib = [
 
 # Ruff configuration
 [tool.ruff]
-target-version = "2.0.0"
+target-version = "1.0.0"
 line-length = 100
 indent-width = 4
 exclude = [
@@ -134,7 +134,7 @@ known-first-party = ["shadowlib"]
 
 # Pytest configuration
 [tool.pytest.ini_options]
-minversion = "2.0.0"
+minversion = "1.0.0"
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
@@ -181,7 +181,7 @@ exclude_lines = [
 
 # MyPy configuration
 [tool.mypy]
-python_version = "2.0.0"
+python_version = "1.0.0"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
