@@ -720,6 +720,16 @@ class RuneLiteAPI:
                 self.result_buffer.seek(0)
                 size = struct.unpack("<I", self.result_buffer.read(4))[0]
 
+                if size == 0:
+                    print(
+                        f"❌ DEBUG: ready=1 but size=0 after {elapsed:.2f}ms (polls={poll_count})"
+                    )
+                    print("   This means C set ready flag but didn't write response data")
+                    # Clear ready flag anyway
+                    self.result_buffer.seek(4)
+                    self.result_buffer.write(struct.pack("<I", 0))
+                    return None
+
                 if size > 0:
                     self.result_buffer.seek(16)
                     # Read the full buffer size to check for magic header

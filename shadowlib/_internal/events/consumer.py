@@ -59,6 +59,10 @@ class EventConsumer:
         self.running = False
         self.thread: threading.Thread | None = None
 
+        # Warmup tracking
+        self._warmup_complete = threading.Event()
+        self._warmup_event_count = 0
+
         # Inotify setup
         self.inotify: INotify | None = None
         self._setupInotify()
@@ -87,9 +91,13 @@ class EventConsumer:
         self.inotify.add_watch(DOORBELL_PATH, inotify_flags.MODIFY | inotify_flags.CLOSE_WRITE)
         print(f"✅ Watching doorbell: {DOORBELL_PATH}")
 
-    def start(self) -> bool:
+    def start(self, wait_for_warmup: bool = True, warmup_timeout: float = 5.0) -> bool:
         """
         Start background event consumer thread.
+
+        Args:
+            wait_for_warmup: If True, block until initial event processing completes
+            warmup_timeout: Maximum seconds to wait for warmup (default 5.0)
 
         Returns:
             True if started successfully
@@ -103,7 +111,32 @@ class EventConsumer:
         self.thread.start()
 
         print("✅ Event consumer started (inotify mode)")
+
+        # Process initial backlog of events before continuing
+        if wait_for_warmup:
+            return self.waitForWarmup(timeout=warmup_timeout)
+
         return True
+
+    def waitForWarmup(self, timeout: float = 5.0) -> bool:
+        """
+        Wait for initial warmup phase to complete.
+
+        Blocks until all existing events are processed or timeout occurs.
+
+        Args:
+            timeout: Maximum seconds to wait
+
+        Returns:
+            True if warmup completed, False if timeout
+        """
+        if self._warmup_complete.wait(timeout=timeout):
+            return True
+        else:
+            print(
+                f"⚠️  Warmup timeout after {timeout}s (processed {self._warmup_event_count} events)"
+            )
+            return False
 
     def stop(self) -> None:
         """Stop event consumer thread."""
@@ -128,6 +161,9 @@ class EventConsumer:
         print(f"   Latest-state channels: {', '.join(LATEST_STATE_CHANNELS)}")
         print()
 
+        # Perform initial warmup - process all existing events before entering main loop
+        self._performWarmup()
+
         while self.running:
             try:
                 # Block here until doorbell rings (zero CPU usage!)
@@ -145,6 +181,42 @@ class EventConsumer:
 
                 traceback.print_exc()
                 time.sleep(1)
+
+    def _performWarmup(self) -> None:
+        """
+        Process all existing events during startup (warmup phase).
+
+        This ensures the cache is populated before the main script continues.
+        """
+        print("🔥 Warming up event cache...")
+        start_time = time.time()
+        total_events = 0
+
+        # Process all ring buffer channels
+        for channel in RING_BUFFER_CHANNELS:
+            count = self._processRingBuffer(channel)
+            total_events += count
+
+        # Process all latest-state channels
+        for channel in LATEST_STATE_CHANNELS:
+            self._processLatestState(channel)
+
+        # Calculate stats
+        elapsed_ms = (time.time() - start_time) * 1000
+        per_event_us = (elapsed_ms * 1000) / total_events if total_events > 0 else 0
+
+        # Store count for timeout reporting
+        self._warmup_event_count = total_events
+
+        if total_events > 0:
+            print(
+                f"✅ Warmup complete: processed {total_events} events in {elapsed_ms:.1f} ms ({per_event_us:.0f}μs/event)"
+            )
+        else:
+            print("✅ Warmup complete: no backlog events found")
+
+        # Signal that warmup is complete
+        self._warmup_complete.set()
 
     def _processAllChannels(self) -> None:
         """Process all ring buffer and latest-state channels."""

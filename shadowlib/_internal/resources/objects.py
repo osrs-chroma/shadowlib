@@ -13,7 +13,8 @@ Positions are stored as packed 32-bit integers:
 import sqlite3
 from typing import Any, Dict, List, Tuple
 
-from ..utils.packed_position import packPositionSigned, unpackPosition
+from shadowlib.types.packed_position import packPositionSigned, unpackPosition
+
 from .base import BaseResource
 
 
@@ -265,7 +266,7 @@ class ObjectsResource(BaseResource):
         results = []
         for row in cursor.fetchall():
             packed_pos = row[0]
-            obj_x, obj_y, obj_plane = unpack_position(packed_pos)
+            obj_x, obj_y, obj_plane = unpackPosition(packed_pos)
 
             # Calculate distance (all results should be within radius)
             dx = abs(obj_x - x)

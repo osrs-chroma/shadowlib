@@ -64,7 +64,7 @@ class Skills(GameTabs):
             Dict with 'level', 'xp', 'boosted_level'
         """
         # Get from cache
-        data = self.client.cache.getSkill(skill_name)
+        data = self.client.cache.getAllSkills().get(skill_name)
         if data:
             return data
 

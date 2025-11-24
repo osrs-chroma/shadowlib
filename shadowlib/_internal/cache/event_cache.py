@@ -235,29 +235,6 @@ class EventCache:
         with self._lock:
             return self._state.bank_open
 
-    def getSkill(self, skill_name: str) -> Dict[str, int] | None:
-        """
-        Get skill level and XP.
-
-        Looks up in StateBuilder.skills dict (built from stat_changed events).
-
-        Args:
-            skill_name: Skill name (e.g., 'Attack', 'Fishing')
-
-        Returns:
-            Dict with 'level', 'xp', 'boosted_level' or None if not tracked
-
-        Example:
-            attack = cache.getSkill('Attack')
-            if attack:
-                print(f"Attack level: {attack['level']}")
-                print(f"Attack XP: {attack['xp']}")
-        """
-        with self._lock:
-            if not self._state.skills:
-                self._state.initSkills()
-            return self._state.skills.get(skill_name)
-
     def getAllSkills(self) -> Dict[str, Dict[str, int]]:
         """
         Get all tracked skills.
@@ -273,6 +250,8 @@ class EventCache:
                 print(f"{name}: Level {data['level']} (XP: {data['xp']})")
         """
         with self._lock:
+            if not self._state.skills:
+                self._state.initSkills()
             return self._state.skills.copy()
 
     def getGroundItems(self) -> Dict[int, Any]:

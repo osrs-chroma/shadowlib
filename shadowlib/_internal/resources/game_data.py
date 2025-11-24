@@ -10,7 +10,8 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-from ..utils.packed_position import packPositionSigned, unpackPosition
+from shadowlib.types.packed_position import packPositionSigned, unpackPosition
+
 from .base import BaseResource
 
 

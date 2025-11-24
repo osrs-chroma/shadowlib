@@ -144,6 +144,106 @@ class Client:
         """
         return self.api.query()
 
+    @property
+    def event_cache(self):
+        """
+        Get event cache instance.
+
+        Provides access to cached game state from events.
+
+        Returns:
+            EventCache instance
+
+        Example:
+            >>> age = client.event_cache.getAge()
+            >>> inventory = client.event_cache.getInventory()
+        """
+        return self._event_cache
+
+    @property
+    def ItemID(self):
+        """Access ItemID constants."""
+        try:
+            from .generated.constants import ItemID
+
+            return ItemID
+        except ImportError:
+            from constants import ItemID
+
+            return ItemID
+
+    @property
+    def ObjectID(self):
+        """Access ObjectID constants."""
+        try:
+            from .generated.constants import ObjectID
+
+            return ObjectID
+        except ImportError:
+            from constants import ObjectID
+
+            return ObjectID
+
+    @property
+    def NpcID(self):
+        """Access NpcID constants."""
+        try:
+            from .generated.constants import NpcID
+
+            return NpcID
+        except ImportError:
+            from constants import NpcID
+
+            return NpcID
+
+    @property
+    def AnimationID(self):
+        """Access AnimationID constants."""
+        try:
+            from .generated.constants import AnimationID
+
+            return AnimationID
+        except ImportError:
+            from constants import AnimationID
+
+            return AnimationID
+
+    @property
+    def InterfaceID(self):
+        """Access InterfaceID constants."""
+        try:
+            from .generated.constants import InterfaceID
+
+            return InterfaceID
+        except ImportError:
+            from constants import InterfaceID
+
+            return InterfaceID
+
+    @property
+    def VarClientInt(self):
+        """Access VarClientInt constants."""
+        try:
+            from .generated.constants import VarClientInt
+
+            return VarClientInt
+        except ImportError:
+            from constants import VarClientInt
+
+            return VarClientInt
+
+    @property
+    def VarClientStr(self):
+        """Access VarClientStr constants."""
+        try:
+            from .generated.constants import VarClientStr
+
+            return VarClientStr
+        except ImportError:
+            from constants import VarClientStr
+
+            return VarClientStr
+
     # Interface modules
     def getBank(self):
         """Get bank module."""

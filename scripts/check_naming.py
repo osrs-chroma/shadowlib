@@ -79,8 +79,26 @@ class NamingChecker(ast.NodeVisitor):
         self.filename = filename
         self.errors: List[Tuple[int, str]] = []
 
+    def _isProperty(self, node: ast.FunctionDef) -> bool:
+        """
+        Check if a function has @property decorator.
+
+        Properties are allowed to use PascalCase (for constants) or snake_case
+        for better IDE autocomplete and to match attribute naming.
+        Examples: ItemID, ObjectID, event_cache
+        """
+        return any(
+            (isinstance(dec, ast.Name) and dec.id == "property")
+            for dec in node.decorator_list
+        )
+
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         """Visit function definitions and check naming."""
+        # Allow any naming for @property decorators (PascalCase, snake_case, camelCase)
+        if self._isProperty(node):
+            self.generic_visit(node)
+            return
+
         if not isCamelCase(node.name):
             self.errors.append(
                 (

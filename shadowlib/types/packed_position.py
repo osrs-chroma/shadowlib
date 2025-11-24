@@ -35,7 +35,7 @@ class PackedPosition:
         if not (0 <= plane <= 3):
             raise ValueError(f"Plane out of range: {plane} (must be 0-3)")
 
-        self._packed = ((plane & 0x3) << 30) | ((y & 0x7FFF) << 15) | (x & 0x7FFF)
+        self._packed = ((plane & 0x3) << 30) | ((x & 0x7FFF) << 15) | (y & 0x7FFF)
 
     @classmethod
     def fromPacked(cls, packed: int) -> "PackedPosition":
@@ -55,12 +55,12 @@ class PackedPosition:
     @property
     def x(self) -> int:
         """Get X coordinate."""
-        return self._packed & 0x7FFF
+        return (self._packed >> 15) & 0x7FFF
 
     @property
     def y(self) -> int:
         """Get Y coordinate."""
-        return (self._packed >> 15) & 0x7FFF
+        return self._packed & 0x7FFF
 
     @property
     def plane(self) -> int:
@@ -125,3 +125,60 @@ class PackedPosition:
 
     def __str__(self) -> str:
         return f"({self.x}, {self.y}, {self.plane})"
+
+
+def packPosition(x: int, y: int, plane: int) -> int:
+    """
+    Pack (x, y, plane) into a 32-bit unsigned integer.
+
+    Args:
+        x: X coordinate (0-32767)
+        y: Y coordinate (0-32767)
+        plane: Plane level (0-3)
+
+    Returns:
+        Packed position as unsigned 32-bit integer
+    """
+    return ((plane & 0x3) << 30) | ((x & 0x7FFF) << 15) | (y & 0x7FFF)
+
+
+def packPositionSigned(x: int, y: int, plane: int) -> int:
+    """
+    Pack (x, y, plane) into a 32-bit SIGNED integer for SQLite compatibility.
+
+    Planes 2-3 will result in negative numbers due to sign bit.
+
+    Args:
+        x: X coordinate (0-32767)
+        y: Y coordinate (0-32767)
+        plane: Plane level (0-3)
+
+    Returns:
+        Packed position as signed 32-bit integer
+    """
+    packed = packPosition(x, y, plane)
+    # Convert to signed 32-bit
+    if packed >= 2**31:
+        return packed - 2**32
+    return packed
+
+
+def unpackPosition(packed: int) -> Tuple[int, int, int]:
+    """
+    Unpack a 32-bit integer into (x, y, plane).
+
+    Args:
+        packed: Packed position (signed or unsigned)
+
+    Returns:
+        Tuple of (x, y, plane)
+    """
+    # Convert signed to unsigned for bit operations
+    if packed < 0:
+        packed = packed + 2**32
+
+    plane = (packed >> 30) & 0x3  # 2 bits
+    x = (packed >> 15) & 0x7FFF  # 15 bits
+    y = packed & 0x7FFF  # 15 bits
+
+    return (x, y, plane)

@@ -8,6 +8,11 @@ structure that mirrors the game's interface.
 __version__ = "2.0.7"
 __author__ = "ShadowBot Team"
 
-from shadowlib.client import Client
+# Ensure generated files path is available for imports
+from shadowlib._internal.generated_loader import ensureGeneratedInPath
+
+ensureGeneratedInPath()
+
+from shadowlib.client import Client  # noqa: E402
 
 __all__ = ["Client"]

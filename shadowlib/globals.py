@@ -51,7 +51,7 @@ def _checkResourceUpdates():
 
         # Check and update all resources atomically
         # If varps needs update, objects gets updated too (they share metadata)
-        needs_update, reason = updater.shouldUpdateAny()
+        needs_update, reason = updater.shouldUpdate()
 
         if needs_update:
             print(f"📦 {reason}")
