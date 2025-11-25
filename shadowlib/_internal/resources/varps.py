@@ -239,3 +239,23 @@ def listVarbits(filter_name: str | None = None) -> Dict[int, Dict[str, Any]]:
         }
 
     return {int(k): v for k, v in _varbits_data.items()}
+
+def getVarcValue(varc_id: int) -> Any | None:
+    """
+    Get the current value of a varc from the event cache.
+
+    Uses cached varc values (updated from var_client_int_changed and var_client_str_changed events)
+    instead of direct API queries for better performance.
+
+    Args:
+        varc_id: The varc ID to read
+    Returns:
+        The varc value, or None if not available
+    """
+    try:
+        from shadowlib.globals import getClient
+
+        client = getClient()
+        return client.cache.getVarc(varc_id)
+    except Exception:
+        return None

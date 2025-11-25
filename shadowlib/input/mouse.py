@@ -147,14 +147,9 @@ class Mouse:
         # Ensure window is ready (respects 10s cache)
         self.runelite.refreshWindowPosition()
 
-        # Small delay before click (human-like)
-        time.sleep(random.uniform(0.05, 0.1))
-
         # Perform click
         pag.click(button=button, _pause=False)
 
-        # Small delay after click
-        time.sleep(random.uniform(0.05, 0.1))
 
     def _hold(self, button: str) -> None:
         """
@@ -165,9 +160,6 @@ class Mouse:
         """
         # Ensure window is ready (respects 10s cache)
         self.runelite.refreshWindowPosition()
-
-        # Small delay before holding (human-like)
-        time.sleep(random.uniform(0.05, 0.1))
 
         # Hold button down
         pag.mouseDown(button=button, _pause=False)
@@ -187,6 +179,10 @@ class Mouse:
 
         # Small delay after release (human-like)
         time.sleep(random.uniform(0.05, 0.1))
+
+    def click(self, button: str = "left") -> None:
+        self._clickButton(button)
+
 
     def moveTo(self, x: int, y: int, safe: bool = True) -> None:
         """

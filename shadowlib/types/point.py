@@ -2,19 +2,6 @@
 
 import math
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from shadowlib.input.io import IO
-
-
-def _getIo() -> "IO":
-    """Lazy import IO to avoid circular imports."""
-    from shadowlib.input.io import IO
-
-    if not hasattr(_getIo, "_io_instance"):
-        _getIo._io_instance = IO()
-    return _getIo._io_instance
 
 
 @dataclass
@@ -54,49 +41,48 @@ class Point:
         dy = self.y - other.y
         return math.sqrt(dx * dx + dy * dy)
 
-    def click(self, button: str = "left", duration: float = 0.2) -> None:
+    def click(self, button: str = "left") -> None:
         """
         Click at this point.
 
         Args:
-            button: Mouse button ('left', 'right', 'middle')
-            duration: Time to take moving to the point (seconds)
+            button: Mouse button ('left', 'right')
 
         Example:
             >>> point = Point(100, 200)
             >>> point.click()  # Left click
             >>> point.click(button="right")  # Right click
         """
-        io = _getIo()
-        io.mouse.move(self.x, self.y, duration=duration)
-        io.mouse.click(button=button)
+        from shadowlib.globals import getClient
 
-    def hover(self, duration: float = 0.2) -> None:
+        mouse = getClient().input.mouse
+        if button == "left":
+            mouse.leftClick(self.x, self.y)
+        else:
+            mouse.rightClick(self.x, self.y)
+
+    def hover(self) -> None:
         """
         Move mouse to hover over this point.
-
-        Args:
-            duration: Time to take moving to the point (seconds)
 
         Example:
             >>> point = Point(100, 200)
             >>> point.hover()
         """
-        io = _getIo()
-        io.mouse.move(self.x, self.y, duration=duration)
+        from shadowlib.globals import getClient
 
-    def rightClick(self, duration: float = 0.2) -> None:
+        mouse = getClient().input.mouse
+        mouse.moveTo(self.x, self.y)
+
+    def rightClick(self) -> None:
         """
         Right-click at this point.
-
-        Args:
-            duration: Time to take moving to the point (seconds)
 
         Example:
             >>> point = Point(100, 200)
             >>> point.rightClick()
         """
-        self.click(button="right", duration=duration)
+        self.click(button="right")
 
     def __repr__(self) -> str:
         return f"Point({self.x}, {self.y})"

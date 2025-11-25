@@ -2,41 +2,16 @@
 Menu module - handles right-click context menu interactions.
 """
 
-import re
+import math
 import time
 from typing import List, Tuple
 
 from shadowlib.globals import getClient
+from shadowlib.utilities.text import stripColorTags
+from shadowlib.utilities import timing
 
-from ..utils.geometry import Area
+from shadowlib.types import Box
 
-
-def _stripColorTags(text: str) -> str:
-    """
-    Remove RuneScape color and image tags from text.
-
-    Tags include:
-    - Color tags: <col=RRGGBB> and </col>
-    - Image tags: <img=NUMBER>
-    - Any other tags in angle brackets
-
-    Args:
-        text: Text with potential tags
-
-    Returns:
-        Text with all tags removed
-
-    Example:
-        >>> _stripColorTags("Follow <col=ffffff>Player</col>  (level-99)")
-        "Follow Player  (level-99)"
-        >>> _stripColorTags("<img=54> Drop Logs")
-        " Drop Logs"
-        >>> _stripColorTags("Cast Confuse</col>")
-        "Cast Confuse"
-    """
-    # Remove all tags in angle brackets (opening and closing)
-    text = re.sub(r"<[^>]+>", "", text)
-    return text
 
 
 class Menu:
@@ -44,38 +19,76 @@ class Menu:
     Menu operations class for handling right-click context menus.
     """
 
-    def __init__(self, client=None):
+    def __init__(self):
         """
         Initialize menu manager.
 
         Args:
             client: Optional Client instance. If None, uses global Client.
         """
-        self.client = client or getClient()
+        self.client = getClient()
 
-    def waitUntilOpen(self, timeout: float = 1.0, poll_interval: float = 0.005) -> bool:
+    def isOpen(self) -> bool:
         """
-        Wait until the menu is open, polling every 5ms (frame-level).
+        Check if the right-click context menu is currently open.
 
-        Args:
-            timeout: Maximum time to wait in seconds
-            poll_interval: Time between checks in seconds (default: 5ms)
+        Reads from game state cache (updated every tick).
 
         Returns:
-            True if menu opened within timeout, False otherwise
+            True if menu is open, False otherwise
         """
-        # TODO: Update when new cache system is implemented
-        start_time = time.time()
+        
+        return self.client.cache.getClientTickState().get("menu_open", False)
+    
+    def _getOptions(self, strip_colors: bool = True) -> Tuple[List[str], List[str]]:
+        data = self.client.cache.getMenuOptions()
+        types = data["types"]
+        options = data["options"]
+        targets = data["targets"]
 
-        while (time.time() - start_time) < timeout:
-            # Check if menu is open
-            if self.isOpen():
-                return True
-            time.sleep(poll_interval)
+        if not types or not options or not targets:
+            return [], []
+        
+        # Combine types, options, and targets into formatted strings
+        
+        formatted_options = [f"{option} {target}".strip() for option, target in zip(options, targets)]
+        if strip_colors:
+            formatted_options = [stripColorTags(opt) for opt in formatted_options]
 
-        return False
+        # reverse because they're stored backwards (last item is first option)
+        formatted_options.reverse()
+        types.reverse()
 
-    def open(self, timeout: float = 1.0) -> bool:
+        return formatted_options, types
+    
+    def _getMenuInfo(self) -> dict:
+        return self.client.cache.getMenuState()     
+
+    def waitMenuClickEvent(self, max_age: float = 0.2, timeout: float = 0.5) -> bool:
+        """
+        Wait for a menu option click event to be registered in the cache.
+
+        Args:
+            timeout: Maximum time to wait for event (seconds). if time since last click is less than timeout, returns True immediately.
+
+        Returns:
+            True if event detected, False if timeout
+        """
+        current_state = self.client.cache.getMenuClickedState()
+        timestamp = current_state.get("_timestamp", 0)
+
+        if (time.time() - timestamp) < max_age:
+            return True
+
+        def check_event(timestamp) -> bool:
+            state = self.client.cache.getMenuClickedState()
+            event_time = state.get("_timestamp", 0)
+            return (event_time - timestamp) > 0
+        
+        return timing.waitUntil(lambda: check_event(timestamp), timeout=timeout, poll_interval=0.001)
+
+
+    def open(self, timeout: float = 0.5) -> bool:
         """
         Open the context menu by right-clicking at current mouse position.
 
@@ -92,14 +105,14 @@ class Menu:
             if menu.open():
                 menu.clickOption("Drop")
         """
-        from ..io.io import IO
-
+        if self.isOpen():
+            return True  # Already open
+        
         # Right-click at current position
-        io = IO()
-        io.mouse.click(button="right")
+        self.client.input.mouse.rightClick()
 
         # Wait for menu to open
-        return self.waitUntilOpen(timeout=timeout)
+        return timing.waitUntil(self.isOpen, timeout=timeout, poll_interval=0.001)
 
     def close(self, use_cancel: bool = True, timeout: float = 1.0) -> bool:
         """
@@ -130,18 +143,17 @@ class Menu:
         """
         import random
 
-        from ..io.io import IO
-
         # Check if menu is open
-        if not self.client.cache.get("isOpen", False):
+        if not self.isOpen():
             return True  # Already closed
 
+        state = self._getMenuInfo()
         # Get menu state from cache
-        scrollable = self.client.cache.get("scrollable", False)
-        menu_x = self.client.cache.get("menuX", 0)
-        menu_y = self.client.cache.get("menuY", 0)
-        menu_width = self.client.cache.get("width", 0)
-        menu_height = self.client.cache.get("height", 0)
+        scrollable = state.get("scrollable", False)
+        menu_x = state.get("menuX", 0)
+        menu_y = state.get("menuY", 0)
+        menu_width = state.get("width", 0)
+        menu_height = state.get("height", 0)
 
         # For scrollable menus, always move mouse away
         if scrollable:
@@ -158,22 +170,21 @@ class Menu:
                     break
 
             if cancel_index is not None:
-                area = self.getOptionArea(cancel_index)
-                if area:
-                    area.click()
+                box = self.getOptionBox(cancel_index)
+                if box:
+                    box.click()
             else:
                 # Cancel not found, fall back to mouse move
                 use_cancel = False
 
         if not use_cancel:
-            # Move mouse at least 30 pixels away from menu area
+            # Move mouse at least 30 pixels away from menu box
             menu_x1 = menu_x
             menu_y1 = menu_y
             menu_x2 = menu_x + menu_width
             menu_y2 = menu_y + menu_height
 
             # Pick a random direction and move 30-50 pixels away
-            io = IO()
             distance = random.randint(30, 50)
 
             # Randomly choose a direction: up, down, left, or right
@@ -193,51 +204,9 @@ class Menu:
                 target_y = random.randint(menu_y1, menu_y2)
 
             # Move mouse to target position
-            io.mouse.move(target_x, target_y, duration=0.1)
+            self.client.input.mouse.moveTo(target_x, target_y, safe = False)
 
-        # Wait for menu to close
-        # TODO: Update when new cache system is implemented
-        start_time = time.time()
-        poll_interval = 0.005
-        while (time.time() - start_time) < timeout:
-            if not self.isOpen():
-                return True
-            time.sleep(poll_interval)
-
-        return False
-
-    def isOpen(self) -> bool:
-        """
-        Check if the right-click context menu is currently open.
-
-        Reads from game state cache (updated every tick).
-
-        Returns:
-            True if menu is open, False otherwise
-        """
-        return self.client.cache.get("isOpen", False)
-
-    def getPosition(self) -> Tuple[int, int]:
-        """
-        Get the menu's top-left position.
-
-        Reads from game state cache (updated every tick).
-
-        Returns:
-            Tuple of (x, y) coordinates
-        """
-        return (self.client.cache.get("menuX", 0), self.client.cache.get("menuY", 0))
-
-    def getDimensions(self) -> Tuple[int, int]:
-        """
-        Get the menu's width and height.
-
-        Reads from game state cache (updated every tick).
-
-        Returns:
-            Tuple of (width, height) in pixels
-        """
-        return (self.client.cache.get("width", 0), self.client.cache.get("height", 0))
+            return timing.waitUntil(lambda: not self.isOpen(), timeout=timeout, poll_interval=0.001)
 
     def getOptions(self, strip_colors: bool = True) -> List[str]:
         """
@@ -259,24 +228,27 @@ class Menu:
             options = menu.getOptions()
             # ['Drop Logs', 'Use Logs', 'Follow Player  (level-99)']
         """
-        menu_options = self.client.cache.get("menu_options", [])
+        menu_options, _ = self._getOptions(strip_colors=strip_colors)
 
-        if not menu_options:
-            return []
+        return menu_options
+    
+    def getTypes(self) -> List[str]:
+        """
+        Get all menu option types.
 
-        # Combine [option, target] pairs with a space
-        formatted_options = [f"{option} {target}".strip() for option, target in menu_options]
+        Reads from game state cache (updated every tick).
 
-        # Strip color tags if requested
-        if strip_colors:
-            formatted_options = [_stripColorTags(opt) for opt in formatted_options]
+        The menu option types correspond to the action types for each option.
 
-        # Reverse because they're stored backwards (last item is first option)
-        formatted_options.reverse()
+        Returns:
+            List of menu option types in display order (top to bottom)
+        """
+        _, menu_types = self._getOptions(strip_colors=True)
 
-        return formatted_options
+        return menu_types
 
-    def getDefaultOption(self, strip_colors: bool = True) -> str | None:
+
+    def getLeftClickOption(self, strip_colors: bool = True) -> str | None:
         """
         Get the default menu option (the one accessible with left-click).
 
@@ -293,19 +265,28 @@ class Menu:
             default = menu.getDefaultOption()
             # "Eat Shark" (if that's the first option on the menu)
         """
-        menu_options = self.client.cache.get("menu_options", [])
-
-        if not menu_options:
+        options = self.getOptions(strip_colors=strip_colors)
+        if not options:
             return None
 
-        # Last item in array = first option on menu = default action
-        option, target = menu_options[-1]
-        formatted = f"{option} {target}".strip()
+        return options[0]
+    
+    def getLeftClickType(self) -> str | None:
+        """
+        Get the action type of the default menu option (the one accessible with left-click).
 
-        if strip_colors:
-            formatted = _stripColorTags(formatted)
+        The default option is the first option displayed on the menu,
+        which is the LAST item in the menu_types array.
 
-        return formatted
+        Returns:
+            The default option type string, or None if no options available
+        """
+        types = self.getTypes()
+        if not types:
+            return None
+
+        return types[0]
+        
 
     def hasOption(self, option_text: str, strip_colors: bool = True) -> bool:
         """
@@ -325,11 +306,11 @@ class Menu:
 
         return any(option_text_lower in option.lower() for option in options)
 
-    def getOptionArea(self, option_index: int) -> Area | None:
+    def getOptionBox(self, option_index: int) -> Box | None:
         """
-        Get the clickable area for a specific menu option.
+        Get the clickable box for a specific menu option.
 
-        Menu option areas are calculated based on:
+        Menu option boxes are calculated based on:
         - Menu position (menuX, menuY)
         - Offset: (2, 19) from menu position to first option
         - Each option: (menuWidth - 4) wide, 15 pixels total height
@@ -339,12 +320,12 @@ class Menu:
             option_index: Index of the option (0 = first/top option)
 
         Returns:
-            Area object for the option, or None if invalid index
+            Box object for the option, or None if invalid index
 
         Example:
-            area = menu.getOptionArea(0)  # Get first option's area
-            if area:
-                area.click()
+            box = menu.getOptionBox(0)  # Get first option's box
+            if box:
+                box.click()
         """
         if not self.isOpen():
             return None
@@ -353,8 +334,12 @@ class Menu:
         if not options or option_index < 0 or option_index >= len(options):
             return None
 
-        menu_x, menu_y = self.getPosition()
-        menu_width, _ = self.getDimensions()
+        state = self._getMenuInfo()
+
+        # Get menu position and dimensions
+        menu_x = state.get("menuX", 0)
+        menu_y = state.get("menuY", 0)
+        menu_width = state.get("width", 0)
 
         # First option starts at offset (2, 19) from menu position
         option_x1 = menu_x + 2
@@ -365,9 +350,9 @@ class Menu:
         option_x2 = option_x1 + (menu_width - 4) - 1
         option_y2 = option_y1 + 14  # 15 pixels total: y1 to y1+14 inclusive
 
-        return Area(option_x1, option_y1, option_x2, option_y2)
+        return Box(option_x1, option_y1, option_x2, option_y2)
 
-    def hoverOption(self, option_text: str, duration: float = 0.2) -> bool:
+    def hoverOption(self, option_text: str) -> bool:
         """
         Hover over a menu option by matching text.
 
@@ -375,13 +360,12 @@ class Menu:
 
         Args:
             option_text: Text to search for in menu options (e.g., "Drop", "Use")
-            duration: Time to take moving to the option (seconds)
 
         Returns:
             True if option was found and hovered, False otherwise
         """
         # Ensure menu is open
-        if not self.client.cache.get("isOpen", False) and not self.open():
+        if not self.open():
             return False
 
         options = self.getOptions()
@@ -389,14 +373,14 @@ class Menu:
 
         for i, option in enumerate(options):
             if option_text_lower in option.lower():
-                area = self.getOptionArea(i)
-                if area:
-                    area.hover(duration=duration)
+                box = self.getOptionBox(i)
+                if box:
+                    box.hover()
                     return True
 
         return False
 
-    def hoverOptionIndex(self, option_index: int, duration: float = 0.2) -> bool:
+    def hoverOptionIndex(self, option_index: int) -> bool:
         """
         Hover over a menu option by its index.
 
@@ -404,7 +388,6 @@ class Menu:
 
         Args:
             option_index: Index of the option (0 = first/top option)
-            duration: Time to take moving to the option (seconds)
 
         Returns:
             True if option was hovered, False if invalid index
@@ -414,16 +397,29 @@ class Menu:
             menu.hoverOptionIndex(0)
         """
         # Ensure menu is open
-        if not self.client.cache.get("isOpen", False) and not self.open():
+        if not self.open():
             return False
 
-        area = self.getOptionArea(option_index)
-        if area:
-            area.hover(duration=duration)
+        box = self.getOptionBox(option_index)
+        if box:
+            box.hover()
             return True
         return False
+    
+    def lastOptionClicked(self) -> str:
+        latest_click = self.client.cache.getMenuClickedState()
+        option = latest_click.get("menu_option", "")
+        target = latest_click.get("menu_target", "")
+        full_option = f"{option} {target}".strip()
+        return stripColorTags(full_option)
+    
+    def waitOptionClicked(self, option_text: str, max_age: float = 0.2, timeout: float = 0.5) -> bool:
+        if not self.waitMenuClickEvent(max_age=max_age, timeout=timeout):
+            return False
 
-    def clickOption(self, option_text: str, button: str = "left", duration: float = 0.2) -> bool:
+        return option_text.lower() in self.lastOptionClicked().lower()
+
+    def clickOption(self, option_text: str) -> bool:
         """
         Click a menu option - intelligently left-clicks default or opens menu.
 
@@ -446,41 +442,29 @@ class Menu:
             # Click "Drop" option (will open menu if not default)
             menu.clickOption("Drop")
         """
-        from ..io.io import IO
-
-        # TODO: Update when new cache system is implemented
-        # Get menu options from cache
-        menu_options = self.client.cache.get("menu_options", [])
-        option_text_lower = option_text.lower()
-
-        # Check if it's the default option (can left-click directly without opening menu)
-        if menu_options:
-            # Last item in array = first on menu = default action
-            default_option, default_target = menu_options[-1]
-            default_formatted = f"{default_option} {default_target}".strip()
-            default_formatted = _stripColorTags(default_formatted)
-
-            if option_text_lower in default_formatted.lower():
-                # It's the default! Just left-click at current position
-                io = IO()
-                io.mouse.click(button="left")
-                return True
-
-        # Not default - need to open menu
-        if not self.client.cache.get("isOpen", False) and not self.open():
+        if self.isOpen():
+            self.hoverOption(option_text)
+            self.client.input.mouse.leftClick()
+            return self.waitOptionClicked(option_text)
+        
+        left_click_option = self.getLeftClickOption()
+        if left_click_option is None:
             return False
-
-        # Find and click the option
+        
+        if option_text.lower() in left_click_option.lower():
+            # It's the default! Just left-click at current position
+            self.client.input.mouse.leftClick()
+            return self.waitOptionClicked(option_text)
+        
         options = self.getOptions()
 
-        for i, option in enumerate(options):
-            if option_text_lower in option.lower():
-                area = self.getOptionArea(i)
-                if area:
-                    area.click(button=button, duration=duration)
-                    return True
-
-        return False
+        if not self.hasOption(option_text):
+            return False
+        
+        self.open()
+        self.hoverOption(option_text)
+        self.client.input.mouse.leftClick()
+        return self.waitOptionClicked(option_text)
 
     def clickOptionIndex(
         self, option_index: int, button: str = "left", duration: float = 0.2
@@ -506,31 +490,11 @@ class Menu:
             menu.clickOptionIndex(1, button='right')
         """
         # Ensure menu is open
-        if not self.client.cache.get("isOpen", False) and not self.open():
+        if not self.open():
             return False
 
-        area = self.getOptionArea(option_index)
-        if area:
-            area.click(button=button, duration=duration)
+        box = self.getOptionBox(option_index)
+        if box:
+            box.click(button=button)
             return True
         return False
-
-
-# Module-level default instance
-_default = Menu()
-
-# Export methods
-isOpen = _default.is_open
-getPosition = _default.get_position
-getDimensions = _default.get_dimensions
-getOptions = _default.get_options
-getDefaultOption = _default.get_default_option
-hasOption = _default.has_option
-getOptionArea = _default.get_option_area
-open = _default.open
-close = _default.close
-waitUntilOpen = _default.wait_until_open
-hoverOption = _default.hover_option
-hoverOptionIndex = _default.hover_option_index
-clickOption = _default.click_option
-clickOptionIndex = _default.click_option_index

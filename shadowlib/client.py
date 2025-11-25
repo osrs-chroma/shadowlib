@@ -4,6 +4,7 @@ Most users won't need this - they can use the module-level functions directly.
 """
 
 from shadowlib._internal.api import RuneLiteAPI
+from shadowlib.generated.constants.varclient import VarClientStr
 
 
 class Client:
@@ -183,30 +184,18 @@ class Client:
             from constants import InterfaceID
 
             return InterfaceID
-
+        
     @property
-    def VarClientInt(self):
-        """Access VarClientInt constants."""
+    def VarClientID(self):
+        """Access VarClientID constants."""
         try:
-            from .generated.constants import VarClientInt
+            from .generated.constants import VarClientID
 
-            return VarClientInt
+            return VarClientID
         except ImportError:
-            from constants import VarClientInt
+            from constants import VarClientID
 
-            return VarClientInt
-
-    @property
-    def VarClientStr(self):
-        """Access VarClientStr constants."""
-        try:
-            from .generated.constants import VarClientStr
-
-            return VarClientStr
-        except ImportError:
-            from constants import VarClientStr
-
-            return VarClientStr
+            return VarClientID
 
     # Namespace properties
     @property

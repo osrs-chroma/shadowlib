@@ -12,13 +12,15 @@ RING_BUFFER_CHANNELS = [
     "item_container_changed",  # Inventory/bank/equipment changes
     "stat_changed",  # XP/level changes
     "animation_changed",  # Animation events
-    "menu_entry_added",  # Menu entry additions
+    "var_client_int_changed",  # Client int changes
+    "var_client_str_changed",  # Client string changes
 ]
 
 # Latest-state channels - only current state matters, file overwritten
 LATEST_STATE_CHANNELS = [
     "gametick",  # Current game tick information
     "clienttick",  # Current client tick information
+    "post_menu_sort",  # Current menu options after sorting
     "menu_option_clicked",  # Menu interaction events
     "game_state_changed",  # Game state transitions (login, loading, etc.)
     "world_view_loaded",  # World view load events

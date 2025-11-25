@@ -163,13 +163,12 @@ class Polygon:
         # Fallback to center if rejection sampling fails
         return self.center()
 
-    def click(self, button: str = "left", duration: float = 0.2, randomize: bool = True) -> None:
+    def click(self, button: str = "left", randomize: bool = True) -> None:
         """
         Click within this polygon.
 
         Args:
-            button: Mouse button ('left', 'right', 'middle')
-            duration: Time to take moving to the point (seconds)
+            button: Mouse button ('left', 'right')
             randomize: If True, clicks at random point. If False, clicks at center.
 
         Example:
@@ -178,14 +177,13 @@ class Polygon:
             >>> polygon.click(randomize=False)  # Click at center
         """
         point = self.randomPoint() if randomize else self.center()
-        point.click(button=button, duration=duration)
+        point.click(button=button)
 
-    def hover(self, duration: float = 0.2, randomize: bool = True) -> None:
+    def hover(self, randomize: bool = True) -> None:
         """
         Move mouse to hover within this polygon.
 
         Args:
-            duration: Time to take moving to the point (seconds)
             randomize: If True, hovers at random point. If False, hovers at center.
 
         Example:
@@ -193,21 +191,20 @@ class Polygon:
             >>> polygon.hover()  # Hover at random point
         """
         point = self.randomPoint() if randomize else self.center()
-        point.hover(duration=duration)
+        point.hover()
 
-    def rightClick(self, duration: float = 0.2, randomize: bool = True) -> None:
+    def rightClick(self, randomize: bool = True) -> None:
         """
         Right-click within this polygon.
 
         Args:
-            duration: Time to take moving to the point (seconds)
             randomize: If True, clicks at random point. If False, clicks at center.
 
         Example:
             >>> polygon = Polygon([Point(0, 0), Point(100, 0), Point(50, 100)])
             >>> polygon.rightClick()
         """
-        self.click(button="right", duration=duration, randomize=randomize)
+        self.click(button="right", randomize=randomize)
 
     def __repr__(self) -> str:
         return f"Polygon({len(self.vertices)} vertices, area={self.area():.2f})"

@@ -182,59 +182,29 @@ class EventCache:
             Current value or None if not set
         """
         with self._lock:
-            if not len(self._state.varps):
+            if len(self._state.varps) < varp_id + 1 and not self._state.varps_initialized:
                 self._state.initVarps()
             if varp_id >= len(self._state.varps):
                 return None
             return self._state.varps[varp_id]
-
-    def getInventory(self) -> List[int]:
+    
+    def getVarc(self, varc_id: int) -> Any | None:
         """
-        Get current inventory state (28-item list).
+        Get current value of a varc from cache.
 
-        Returns copy of StateBuilder.inventory (built from item_container_changed events).
+        Looks up in StateBuilder.varcs dict (built from var_client_int_changed and var_client_str_changed events).
 
+        Args:
+            varc_id: Varc ID to query
         Returns:
-            List of item IDs (-1 for empty slots)
+            Current value or None if not set
         """
         with self._lock:
-            return self._state.inventory.copy()
-
-    def getEquipment(self) -> Dict[int, int]:
-        """
-        Get current equipment state.
-
-        Returns copy of StateBuilder.equipment (built from item_container_changed events).
-
-        Returns:
-            Dict mapping slot ID to item ID
-        """
-        with self._lock:
-            return self._state.equipment.copy()
-
-    def getBank(self) -> Dict[int, Dict[str, Any]]:
-        """
-        Get current bank contents (only valid if bank is open).
-
-        Returns copy of StateBuilder.bank (built from item_container_changed events).
-
-        Returns:
-            Dict mapping item ID to item info
-        """
-        with self._lock:
-            return self._state.bank.copy()
-
-    def isBankOpen(self) -> bool:
-        """
-        Check if bank is currently open.
-
-        Reads StateBuilder.bank_open flag.
-
-        Returns:
-            True if bank is open
-        """
-        with self._lock:
-            return self._state.bank_open
+            varc = self._state.varcs.get(varc_id, None)
+            if varc is None and not self._state.varcs_initialized:
+                self._state.initVarcs()
+                varc = self._state.varcs.get(varc_id, None)
+            return varc
 
     def getAllSkills(self) -> Dict[str, Dict[str, int]]:
         """
@@ -251,7 +221,7 @@ class EventCache:
                 print(f"{name}: Level {data['level']} (XP: {data['xp']})")
         """
         with self._lock:
-            if not self._state.skills:
+            if not len(self._state.skills) == 24:
                 self._state.initSkills()
             return self._state.skills.copy()
 
@@ -295,6 +265,55 @@ class EventCache:
                 containers[container_id] = ItemContainer(container_id, -1)
 
             return self._state.itemcontainers.get(container_id, None)
+        
+    def getMenuState(self) -> Dict[str, Any]:
+        """
+        Get latest menu state.
+
+        Returns copy of menu data from StateBuilder.latest_states.
+
+        Returns:
+            Dict with _timestampt, menuX, menuY, width and height
+        """
+        with self._lock:
+            return self._state.latest_states.get("menu_opened", {}).copy()
+        
+    def getMenuOptions(self) -> List[Dict[str, Any]]:
+        """
+        Get latest menu options.
+
+        Returns copy of menu options from StateBuilder.latest_states.
+
+        Returns:
+            List of menu option dicts
+        """
+        with self._lock:
+            menu_state = self._state.latest_states.get("post_menu_sort", {})
+            return menu_state
+        
+    def getClientTickState(self) -> Dict[str, Any]:
+        """
+        Get latest client tick state.
+
+        Returns copy of client tick data from StateBuilder.latest_states.
+
+        Returns:
+            Dict with client tick information
+        """
+        with self._lock:
+            return self._state.latest_states.get("clienttick", {}).copy()
+        
+    def getMenuClickedState(self) -> Dict[str, Any]:
+        """
+        Get latest menu option clicked state.
+
+        Returns copy of menu option clicked data from StateBuilder.latest_states.
+
+        Returns:
+            Dict with menu option clicked information
+        """
+        with self._lock:
+            return self._state.latest_states.get("menu_option_clicked", {}).copy()
 
 
 if __name__ == "__main__":

@@ -125,13 +125,12 @@ class Box:
 
         return Point(random.randrange(self.x1, self.x2), random.randrange(self.y1, self.y2))
 
-    def click(self, button: str = "left", duration: float = 0.2, randomize: bool = True) -> None:
+    def click(self, button: str = "left", randomize: bool = True) -> None:
         """
         Click within this box.
 
         Args:
-            button: Mouse button ('left', 'right', 'middle')
-            duration: Time to take moving to the point (seconds)
+            button: Mouse button ('left', 'right')
             randomize: If True, clicks at random point. If False, clicks at center.
 
         Example:
@@ -141,14 +140,13 @@ class Box:
             >>> box.click(button="right")  # Right-click at random point
         """
         point = self.randomPoint() if randomize else self.center()
-        point.click(button=button, duration=duration)
+        point.click(button=button)
 
-    def hover(self, duration: float = 0.2, randomize: bool = True) -> None:
+    def hover(self, randomize: bool = True) -> None:
         """
         Move mouse to hover within this box.
 
         Args:
-            duration: Time to take moving to the point (seconds)
             randomize: If True, hovers at random point. If False, hovers at center.
 
         Example:
@@ -157,21 +155,20 @@ class Box:
             >>> box.hover(randomize=False)  # Hover at center
         """
         point = self.randomPoint() if randomize else self.center()
-        point.hover(duration=duration)
+        point.hover()
 
-    def rightClick(self, duration: float = 0.2, randomize: bool = True) -> None:
+    def rightClick(self, randomize: bool = True) -> None:
         """
         Right-click within this box.
 
         Args:
-            duration: Time to take moving to the point (seconds)
             randomize: If True, clicks at random point. If False, clicks at center.
 
         Example:
             >>> box = Box(100, 100, 200, 200)
             >>> box.rightClick()
         """
-        self.click(button="right", duration=duration, randomize=randomize)
+        self.click(button="right", randomize=randomize)
 
     def __repr__(self) -> str:
         return f"Box({self.x1}, {self.y1}, {self.x2}, {self.y2})"

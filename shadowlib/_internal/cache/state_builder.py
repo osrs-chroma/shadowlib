@@ -13,8 +13,9 @@ from typing import Any, Deque, Dict, List
 
 import shadowlib.utilities.timing as timing
 from shadowlib._internal.events.channels import LATEST_STATE_CHANNELS
-from shadowlib.globals import getClient
+from shadowlib.globals import getApi
 from shadowlib.tabs.skills import SKILL_NAMES
+from shadowlib._internal.resources import varps as varps_resource
 from shadowlib.types import Item, ItemContainer
 
 
@@ -43,6 +44,7 @@ class StateBuilder:
 
         # Derived state from ring buffer events
         self.varps: List[int] = []  # {varp_id: value}
+        self.varcs: Dict[int, Any] = {}  # {varc_id: value}
 
         self.skills: Dict[str, Dict[str, int]] = {}  # {skill_name: {level, xp, boosted_level}}
         self.last_click: Dict[str, Any] = {}  # {button, coords, time}
@@ -50,10 +52,10 @@ class StateBuilder:
         self.current_state: Dict[str, Any] = {}  # Other derived state as needed
         self.animating_actors: Dict[str, Any] = defaultdict(dict)  # Actors currently animating
 
-        # Cache VarpsResource instance to avoid reloading on every varbit change
-        self._varps_resource = None
-
         self.ground_items_initialized = False
+        self.varps_initialized = False
+        self.varcs_initialized = False
+        self.skills_initialized = False
 
         self.itemcontainers: Dict[int, ItemContainer] = {}
 
@@ -74,6 +76,7 @@ class StateBuilder:
         print(f"Processing event on channel {channel}: {event}")
         if channel in LATEST_STATE_CHANNELS:
             # Latest-state: just overwrite
+            event["_timestamp"] = time()
             self.latest_states[channel] = event
         else:
             # Ring buffer: store history + update derived state
@@ -90,6 +93,8 @@ class StateBuilder:
         """
         if channel == "varbit_changed":
             self._processVarbitChanged(event)
+        elif channel == "var_client_int_changed" or channel == "var_client_str_changed":
+            self._processVarcChanged(event)
         elif channel == "item_container_changed":
             self._processItemContainerChanged(event)
         elif channel == "stat_changed":
@@ -128,6 +133,18 @@ class StateBuilder:
 
         self.varps[varp_id] = new_value
 
+    def _editVarc(self, varc_id: int, new_value: Any) -> None:
+        """
+        Set a varc to a new value.
+
+        Args:
+            varc_id: Varc index
+            new_value: New value (any type)
+        """
+        if (len(self.varcs) == 0) and (not self.varcs_initialized):
+            self.initVarcs()
+        self.varcs[varc_id] = new_value
+
     def _editVarbit(self, varbit_id: int, varp_id: int, new_value: int) -> None:
         """
         Update a varbit value by modifying specific bits in its parent varp.
@@ -139,18 +156,10 @@ class StateBuilder:
             varp_id: Parent varp index
             new_value: New value for the varbit
         """
-        # Get varbit metadata from resources (cached instance)
-        if self._varps_resource is None:
-            from shadowlib._internal.resources.varps import VarpsResource
-
-            self._varps_resource = VarpsResource()
-
-        varbit_info = self._varps_resource.getVarbitInfo(varbit_id)
+        # Get varbit metadata from resources (direct import to avoid race condition)
+        varbit_info = varps_resource.getVarbitInfo(varbit_id)
 
         if not varbit_info:
-            # Unknown varbit, can't determine bit positions
-            # Fall back to setting the varp directly (may be incorrect)
-            self._editVarp(varp_id, new_value)
             return
 
         # Get bit positions
@@ -158,8 +167,10 @@ class StateBuilder:
         msb = varbit_info["msb"]  # Most significant bit
 
         # Ensure varps list is large enough
-        if varp_id >= len(self.varps):
-            self.varps.extend([0] * (varp_id - len(self.varps) + 1))
+        if varp_id >= len(self.varps) and not self.varps_initialized:
+            self.initVarps()
+            if varp_id >= len(self.varps):
+                return  # Invalid varp_id
 
         # Get current varp value
         current_varp = self.varps[varp_id]
@@ -204,6 +215,23 @@ class StateBuilder:
         else:
             # Update varbit (with bit manipulation)
             self._editVarbit(varbit_id, varp_id, value)
+
+    def _processVarcChanged(self, event: Dict[str, Any]) -> None:
+        """
+        Update varc state from event.
+
+        Args:
+            event: Varc changed event dict with keys:
+                - varc_id: Varc index
+                - value: New value
+        """
+        varc_id = event.get("varc_id")
+        value = event.get("value")
+
+        if varc_id is None:
+            return  # Invalid event
+
+        self._editVarc(varc_id, value)
 
     def _processItemContainerChanged(self, event: Dict[str, Any]) -> None:
         """
@@ -257,44 +285,62 @@ class StateBuilder:
         """
         use query to get full list of varps
         """
-        client = getClient()
-        q = client.query()
+        api = getApi()
+        q = api.query()
 
         v = q.client.getServerVarps()
         results = q.execute({"varps": v})
         varps = results["results"].get("varps", [])
-        self.varps = varps
+        if len(varps) > 1000:
+            self.varps = varps
+            self.varps_initialized = True
+
+    def initVarcs(self) -> None:
+        """
+        use query to get full list of varcs
+        """
+        api = getApi()
+        q = api.query()
+
+        v = q.client.getVarcMap()
+        results = q.execute({"varcs": v})
+        varcs = results["results"].get("varcs", {})
+        if len(varcs) > 0:
+            self.varcs = varcs
+            self.varcs_initialized = True
 
     def initSkills(self) -> None:
         """
         use query to get full list of skills
         """
-        client = getClient()
-        q = client.query()
+        api = getApi()
+        q = api.query()
 
         levels = q.client.getRealSkillLevels()
         xps = q.client.getSkillExperiences()
         boosted_levels = q.client.getBoostedSkillLevels()
 
         results = q.execute({"levels": levels, "xps": xps, "boosted_levels": boosted_levels})
-        for index, skill in enumerate(SKILL_NAMES):
-            leveldata = results["results"].get("levels", {})
-            xpdata = results["results"].get("xps", {})
-            boosteddata = results["results"].get("boosted_levels", {})
-            self.skills[skill] = {
-                "level": leveldata[index],
-                "xp": xpdata[index],
-                "boosted_level": boosteddata[index],
-            }
+        if len(results["results"].get("levels", {})) > 0:
+            self.skills_initialized = True
+            for index, skill in enumerate(SKILL_NAMES):
+                leveldata = results["results"].get("levels", {})
+                xpdata = results["results"].get("xps", {})
+                boosteddata = results["results"].get("boosted_levels", {})
+                self.skills[skill] = {
+                    "level": leveldata[index],
+                    "xp": xpdata[index],
+                    "boosted_level": boosteddata[index],
+                }
 
     def initGroundItems(self) -> None:
         """
         use query to get full list of ground items
         """
-        client = getClient()
+        api = getApi()
 
         try:
-            client.api.invokeCustomMethod(
+            api.invokeCustomMethod(
                 target="EventBusListener",
                 method="rebuildGroundItems",
                 signature="()V",
@@ -304,13 +350,3 @@ class StateBuilder:
         except Exception as e:
             print(f"❌ Rebuild grounditems failed: {e}")
             return
-
-
-if __name__ == "__main__":
-    # Simple test
-    client = getClient()
-    cache = client.cache
-    print(time())
-
-    timing.sleep(100)
-    print(cache._state.inventory)
