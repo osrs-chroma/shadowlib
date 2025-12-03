@@ -134,4 +134,4 @@ class GameTabs:
         tab_area = self.tab_box_array[self.TAB_TYPE.value]
         tab_area.click()
 
-        return waitUntil(self.isOpen, timeout=0.1, check_interval=0.001)
+        return waitUntil(self.isOpen, timeout=0.1, poll_interval=0.001)
