@@ -29,21 +29,23 @@ class Inventory(GameTabs, ItemContainer):
         """
         # Initialize GameTabs (which sets up client and tab areas)
         GameTabs.__init__(self, client)
-        # Initialize ItemContainer with inventory-specific values
-        ItemContainer.__init__(self, containerId=self.INVENTORY_ID, slotCount=28, items=[])
+        # Set ItemContainer attributes directly (can't call __init__ because items is a property)
+        self.containerId = self.INVENTORY_ID
+        self.slotCount = 28
+        self._items = []
 
         # Create inventory slot grid (4 columns x 7 rows, 28 slots total)
         # Slot 0 starts at (563, 213), each slot is 36x32 pixels with 6px horizontal spacing
         # 2px padding on all sides to avoid misclicks on edges
         self.slots = createGrid(
-            start_x=563,
-            start_y=213,
+            startX=563,
+            startY=213,
             width=36,
             height=32,
             columns=4,
             rows=7,
-            spacing_x=6,
-            spacing_y=4,  # Vertical spacing between rows
+            spacingX=6,
+            spacingY=4,  # Vertical spacing between rows
             padding=1,  # 2px padding on all sides to avoid edge misclicks
         )
 
@@ -65,14 +67,13 @@ class Inventory(GameTabs, ItemContainer):
         """
         return self.slots[slot_index]
 
-    def hoverItem(self, item_id: int, random: bool = False) -> bool:
+    def hoverItem(self, item_id: int, randomize: bool = False) -> bool:
         """
         Hover over an item in the inventory.
 
         Args:
             item_id: The item ID to hover over
-            slot_index: Specific slot index (0-27) to hover. If None, hovers first found slot.
-            duration: Time to take moving to the item (seconds)
+            randomize: If True, hovers over a random slot containing the item
 
         Returns:
             True if item was found and hovered, False otherwise
@@ -81,10 +82,12 @@ class Inventory(GameTabs, ItemContainer):
             # Hover over first logs found
             inventory.hoverItem(1511)
 
-            # Hover over logs in slot 5
-            inventory.hoverItem(1511, slot_index=5)
+            # Hover over random logs slot
+            inventory.hoverItem(1511, randomize=True)
         """
-        if not random:
+        import random
+
+        if not randomize:
             # Find first slot with the item
             slot = self.findItemSlot(item_id)
             if slot is None:
@@ -99,17 +102,16 @@ class Inventory(GameTabs, ItemContainer):
         if selected_slot is None:
             return False
 
-        # Hover the first slot
+        # Hover the selected slot
         self.slots[selected_slot].hover()
         return True
 
-    def hoverSlot(self, slot_index: int, duration: float = 0.2) -> bool:
+    def hoverSlot(self, slot_index: int) -> bool:
         """
         Hover over a specific inventory slot regardless of contents.
 
         Args:
             slot_index: Slot index (0-27) to hover
-            duration: Time to take moving to the slot (seconds)
 
         Returns:
             True if slot index is valid, False otherwise
@@ -131,7 +133,6 @@ class Inventory(GameTabs, ItemContainer):
         item_id: int,
         slot_index: int | None = None,
         button: str = "left",
-        duration: float = 0.2,
     ) -> bool:
         """
         Click an item in the inventory.
@@ -140,7 +141,6 @@ class Inventory(GameTabs, ItemContainer):
             item_id: The item ID to click
             slot_index: Specific slot index (0-27) to click. If None, clicks first found slot.
             button: Mouse button to use ('left' or 'right')
-            duration: Time to take moving to the item (seconds)
 
         Returns:
             True if item was found and clicked, False otherwise
@@ -229,7 +229,7 @@ class Inventory(GameTabs, ItemContainer):
 
         return False
 
-    def dropItem(self, item_id: int, duration: float = 0.2, force_shift: bool = False) -> int:
+    def dropItem(self, item_id: int, force_shift: bool = False) -> int:
         """
         Drop ALL occurrences of an item from the inventory.
 
@@ -238,7 +238,6 @@ class Inventory(GameTabs, ItemContainer):
 
         Args:
             item_id: The item ID to drop (drops ALL slots containing this item)
-            duration: Time to take moving to each item (seconds)
             force_shift: If True, forces shift-drop even if setting is disabled
 
         Returns:
@@ -263,9 +262,7 @@ class Inventory(GameTabs, ItemContainer):
         # Use drop_slots for the actual dropping logic
         return self.dropSlots(slots, force_shift=force_shift)
 
-    def dropItems(
-        self, item_ids: List[int], duration: float = 0.2, force_shift: bool = False
-    ) -> int:
+    def dropItems(self, item_ids: List[int], force_shift: bool = False) -> int:
         """
         Drop ALL occurrences of multiple items from inventory.
 
@@ -273,7 +270,6 @@ class Inventory(GameTabs, ItemContainer):
 
         Args:
             item_ids: List of item IDs to drop (drops ALL slots for each item)
-            duration: Time to take moving to each item (seconds)
             force_shift: If True, forces shift-drop even if setting is disabled
 
         Returns:
@@ -300,9 +296,7 @@ class Inventory(GameTabs, ItemContainer):
         # Use drop_slots for the actual dropping logic
         return self.dropSlots(all_slots, force_shift=force_shift)
 
-    def dropSlots(
-        self, slot_indices: List[int], duration: float = 0.2, force_shift: bool = False
-    ) -> int:
+    def dropSlots(self, slot_indices: List[int], force_shift: bool = False) -> int:
         """
         Drop items from specific inventory slots.
 
@@ -310,7 +304,6 @@ class Inventory(GameTabs, ItemContainer):
 
         Args:
             slot_indices: List of slot indices (0-27) to drop
-            duration: Time to take moving to each item (seconds)
             force_shift: If True, forces shift-drop even if setting is disabled
 
         Returns:
@@ -324,9 +317,7 @@ class Inventory(GameTabs, ItemContainer):
             # Drop entire inventory (all 28 slots)
             inventory.dropSlots(list(range(28)))
         """
-        from shadowlib.input.io import IO
-
-        from ..menu import Menu
+        from ..interactions.menu import Menu
 
         if not slot_indices:
             return 0
@@ -335,11 +326,11 @@ class Inventory(GameTabs, ItemContainer):
         use_shift_drop = force_shift or self.isShiftDropEnabled()
 
         dropped_count = 0
-        io = IO()
+        keyboard = self.client.input.keyboard
 
         if use_shift_drop:
             # Hold shift for all drops
-            io.keyboard.key_down("shift")
+            keyboard.hold("shift")
 
         try:
             menu = Menu(self.client)
@@ -354,20 +345,16 @@ class Inventory(GameTabs, ItemContainer):
                     continue  # Skip if Drop option not available
 
                 # Click Drop option with fresh cache
-                if menu.clickOption(
-                    "Drop",
-                ):
+                if menu.clickOption("Drop"):
                     dropped_count += 1
         finally:
             if use_shift_drop:
                 # Always release shift
-                io.keyboard.key_up("shift")
+                keyboard.release("shift")
 
         return dropped_count
 
-    def selectItem(
-        self, item_id: int, slot_index: int | None = None, duration: float = 0.2
-    ) -> bool:
+    def selectItem(self, item_id: int, slot_index: int | None = None) -> bool:
         """
         Select an item in the inventory (for 'Use item on...' actions).
 
@@ -376,7 +363,6 @@ class Inventory(GameTabs, ItemContainer):
         Args:
             item_id: The item ID to select
             slot_index: Specific slot index (0-27) to select. If None, selects first found slot.
-            duration: Time to take moving to the item (seconds)
 
         Returns:
             True if item was selected successfully, False otherwise
@@ -414,7 +400,6 @@ class Inventory(GameTabs, ItemContainer):
         item2_id: int,
         item1_slot: int | None = None,
         item2_slot: int | None = None,
-        duration: float = 0.2,
     ) -> bool:
         """
         Use one item on another item in inventory.
@@ -429,7 +414,6 @@ class Inventory(GameTabs, ItemContainer):
             item2_id: The item ID to use it on (will be hovered)
             item1_slot: Specific slot for first item. If None, uses first found.
             item2_slot: Specific slot for second item. If None, uses first found.
-            duration: Time to take for mouse movements (seconds)
 
         Returns:
             True if items were used together successfully, False otherwise
@@ -470,14 +454,13 @@ class Inventory(GameTabs, ItemContainer):
 
         return False
 
-    def clickSlot(self, slot_index: int, button: str = "left", duration: float = 0.2) -> bool:
+    def clickSlot(self, slot_index: int, button: str = "left") -> bool:
         """
         Click a specific inventory slot regardless of contents.
 
         Args:
             slot_index: Slot index (0-27) to click
             button: Mouse button to use ('left' or 'right')
-            duration: Time to take moving to the slot (seconds)
 
         Returns:
             True if slot index is valid, False otherwise
@@ -490,6 +473,6 @@ class Inventory(GameTabs, ItemContainer):
             inventory.clickSlot(27, button='right')
         """
         if 0 <= slot_index < 28:
-            self.slots[slot_index].click(button=button, duration=duration)
+            self.slots[slot_index].click(button=button)
             return True
         return False

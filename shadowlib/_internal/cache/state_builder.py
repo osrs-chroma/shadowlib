@@ -225,7 +225,9 @@ class StateBuilder:
                 - varc_id: Varc index
                 - value: New value
         """
+
         varc_id = event.get("varc_id")
+        print(f"varc name: {varps_resource.getVarcName(varc_id)}")
         value = event.get("value")
 
         if varc_id is None:

@@ -260,3 +260,45 @@ def getVarcValue(varc_id: int) -> Any | None:
         return client.cache.getVarc(varc_id)
     except Exception:
         return None
+
+
+# Cache for VarClientID id -> name mapping (built on first use)
+_varc_id_to_name: Dict[int, str] | None = None
+
+
+def _buildVarcCache() -> Dict[int, str]:
+    """Build varc id->name cache using fast __dict__ access."""
+    global _varc_id_to_name
+
+    if _varc_id_to_name is not None:
+        return _varc_id_to_name
+
+    _varc_id_to_name = {}
+    try:
+        from shadowlib.generated.constants.varclient_id import VarClientID
+
+        # Use __dict__ directly - much faster than dir() + getattr()
+        for name, value in vars(VarClientID).items():
+            if not name.startswith("_") and isinstance(value, int):
+                _varc_id_to_name[value] = name
+    except ImportError:
+        pass
+
+    return _varc_id_to_name
+
+
+def getVarcName(varc_id: int) -> str | None:
+    """
+    Get the name of a varc by its ID.
+
+    Args:
+        varc_id: The varc ID to look up
+
+    Returns:
+        The varc name, or None if not found
+
+    Example:
+        >>> getVarcName(171)
+        'INVENTORY_TAB'
+    """
+    return _buildVarcCache().get(varc_id)

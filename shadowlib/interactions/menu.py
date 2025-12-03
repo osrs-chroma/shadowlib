@@ -428,8 +428,6 @@ class Menu:
 
         Args:
             option_text: Text to search for in menu options (e.g., "Drop", "Eat")
-            button: Mouse button for menu selection ('left' or 'right')
-            duration: Time to take moving to the option (seconds)
 
         Returns:
             True if option was found and clicked, False otherwise
@@ -463,9 +461,7 @@ class Menu:
         self.client.input.mouse.leftClick()
         return self.waitOptionClicked(option_text)
 
-    def clickOptionIndex(
-        self, option_index: int, button: str = "left", duration: float = 0.2
-    ) -> bool:
+    def clickOptionIndex(self, option_index: int, button: str = "left") -> bool:
         """
         Click a menu option by its index.
 
@@ -474,7 +470,6 @@ class Menu:
         Args:
             option_index: Index of the option (0 = first/top option)
             button: Mouse button ('left', 'right', 'middle')
-            duration: Time to take moving to the option (seconds)
 
         Returns:
             True if option was clicked, False if invalid index

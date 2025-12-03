@@ -179,6 +179,19 @@ class Mouse:
         # Small delay after release (human-like)
         time.sleep(random.uniform(0.05, 0.1))
 
+    def _scroll(self, clicks: int) -> None:
+        """
+        Core scroll function - ONLY access point to pyautogui.scroll().
+
+        Args:
+            clicks: Number of scroll clicks (positive=up, negative=down)
+        """
+        # Ensure window is ready (respects 10s cache)
+        self.runelite.refreshWindowPosition()
+
+        # Perform scroll
+        pag.scroll(clicks, _pause=False)
+
     def click(self, button: str = "left") -> None:
         self._clickButton(button)
 
@@ -297,3 +310,26 @@ class Mouse:
             >>> mouse.releaseRight()
         """
         self._release("right")
+
+    def scroll(self, up: bool = True, count: int = 1) -> None:
+        """
+        Scroll the mouse wheel with human-like delays between scrolls.
+
+        Args:
+            up: If True, scroll up. If False, scroll down.
+            count: Number of scroll clicks (default 1)
+
+        Example:
+            >>> mouse.scroll()              # Scroll up once
+            >>> mouse.scroll(up=False)      # Scroll down once
+            >>> mouse.scroll(count=3)       # Scroll up 3 times
+            >>> mouse.scroll(up=False, count=5)  # Scroll down 5 times
+        """
+        direction = 1 if up else -1
+
+        for i in range(count):
+            self._scroll(direction)
+
+            # Add human-like delay between scrolls (~25-50ms)
+            if i < count - 1:
+                time.sleep(random.uniform(0.025, 0.05))

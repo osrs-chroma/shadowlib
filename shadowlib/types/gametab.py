@@ -6,6 +6,7 @@ from enum import Enum
 
 from shadowlib.globals import getClient
 from shadowlib.types.box import Box
+from shadowlib.utilities.timing import waitUntil
 
 
 class GameTab(Enum):
@@ -57,7 +58,7 @@ class GameTabs:
         h = 261
         self.bounds = Box(x, y, x + w, y + h)
         # init as list of Boxes for each tab
-        self.tab_box_array = []
+        self.tab_box_array: list[Box] = []
 
         for i in range(7):
             tab_x = 530 + (i * 33)
@@ -76,11 +77,6 @@ class GameTabs:
         # Swap index 8 and 9 because the game is weird
         self.tab_box_array[8], self.tab_box_array[9] = self.tab_box_array[9], self.tab_box_array[8]
 
-    def getOpenTab(self) -> GameTab | None:
-        """Get the currently open tab."""
-        index = self.client.cache["open_tab"]
-        return GameTab(index) if index in GameTab._value2member_map_ else None
-
     def isOpen(self) -> bool:
         """
         Check if this specific game tab is currently open.
@@ -88,17 +84,12 @@ class GameTabs:
         Returns:
             True if this tab is open, False otherwise.
         """
-        if self.TAB_TYPE is None:
-            raise NotImplementedError("Subclass must set TAB_TYPE class attribute")
-        current_tab = self.getOpenTab()
+        current_tab = self.client.tabs.getOpenTab()
         return current_tab == self.TAB_TYPE
 
-    def hover(self, duration: float = 0.2) -> bool:
+    def hover(self) -> bool:
         """
         Hover over this specific game tab.
-
-        Args:
-            duration: Time to take moving to the tab (seconds)
 
         Returns:
             True if the tab area was hovered, False if TAB_TYPE not set.
@@ -113,19 +104,16 @@ class GameTabs:
 
         # Hover over the tab's area
         tab_area = self.tab_box_array[self.TAB_TYPE.value]
-        tab_area.hover(duration=duration)
+        tab_area.hover()
 
         return True
 
-    def open(self, duration: float = 0.2) -> bool:
+    def open(self) -> bool:
         """
         Open this specific game tab.
 
         This method hovers over the tab before clicking, then forces
         a cache update to get fresh tab state immediately.
-
-        Args:
-            duration: Time to take moving to the tab (seconds)
 
         Returns:
             True if the tab was successfully opened (or already open), False otherwise.
@@ -144,7 +132,6 @@ class GameTabs:
 
         # Click on the tab's area (which automatically hovers first)
         tab_area = self.tab_box_array[self.TAB_TYPE.value]
-        tab_area.click(duration=duration)
+        tab_area.click()
 
-        # TODO: Verify tab opened with new cache system when implemented
-        return self.isOpen()
+        return waitUntil(self.isOpen, timeout=0.1, check_interval=0.001)

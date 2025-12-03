@@ -3,8 +3,26 @@ Main Client class for advanced users who want explicit control.
 Most users won't need this - they can use the module-level functions directly.
 """
 
+from typing import TYPE_CHECKING
+
 from shadowlib._internal.api import RuneLiteAPI
 from shadowlib.generated.constants.varclient import VarClientStr
+
+if TYPE_CHECKING:
+    from shadowlib._internal.cache.event_cache import EventCache
+    from shadowlib.generated.constants.animation_id import AnimationID
+    from shadowlib.generated.constants.interface_id import InterfaceID
+    from shadowlib.generated.constants.item_id import ItemID
+    from shadowlib.generated.constants.npc_id import NpcID
+    from shadowlib.generated.constants.object_id import ObjectID
+    from shadowlib.generated.constants.varclient_id import VarClientID
+    from shadowlib.input import Input
+    from shadowlib.interactions import Interactions
+    from shadowlib.interfaces import Interfaces
+    from shadowlib.navigation import Navigation
+    from shadowlib.player import Player
+    from shadowlib.tabs import Tabs
+    from shadowlib.world import World
 
 
 class Client:
@@ -110,7 +128,7 @@ class Client:
         return self.api.query()
 
     @property
-    def event_cache(self):
+    def event_cache(self) -> "EventCache":
         """
         Get event cache instance.
 
@@ -126,7 +144,7 @@ class Client:
         return self._event_cache
 
     @property
-    def ItemID(self):
+    def ItemID(self) -> type["ItemID"]:
         """Access ItemID constants."""
         try:
             from .generated.constants import ItemID
@@ -138,7 +156,7 @@ class Client:
             return ItemID
 
     @property
-    def ObjectID(self):
+    def ObjectID(self) -> type["ObjectID"]:
         """Access ObjectID constants."""
         try:
             from .generated.constants import ObjectID
@@ -150,7 +168,7 @@ class Client:
             return ObjectID
 
     @property
-    def NpcID(self):
+    def NpcID(self) -> type["NpcID"]:
         """Access NpcID constants."""
         try:
             from .generated.constants import NpcID
@@ -162,7 +180,7 @@ class Client:
             return NpcID
 
     @property
-    def AnimationID(self):
+    def AnimationID(self) -> type["AnimationID"]:
         """Access AnimationID constants."""
         try:
             from .generated.constants import AnimationID
@@ -174,7 +192,7 @@ class Client:
             return AnimationID
 
     @property
-    def InterfaceID(self):
+    def InterfaceID(self) -> type["InterfaceID"]:
         """Access InterfaceID constants."""
         try:
             from .generated.constants import InterfaceID
@@ -186,7 +204,7 @@ class Client:
             return InterfaceID
 
     @property
-    def VarClientID(self):
+    def VarClientID(self) -> type["VarClientID"]:
         """Access VarClientID constants."""
         try:
             from .generated.constants import VarClientID
@@ -199,7 +217,7 @@ class Client:
 
     # Namespace properties
     @property
-    def tabs(self):
+    def tabs(self) -> "Tabs":
         """
         Get tabs namespace.
 
@@ -218,7 +236,7 @@ class Client:
         return self._tabs
 
     @property
-    def input(self):
+    def input(self) -> "Input":
         """
         Get input namespace.
 
@@ -236,7 +254,7 @@ class Client:
         return self._input
 
     @property
-    def world(self):
+    def world(self) -> "World":
         """
         Get world namespace.
 
@@ -254,7 +272,7 @@ class Client:
         return self._world
 
     @property
-    def navigation(self):
+    def navigation(self) -> "Navigation":
         """
         Get navigation namespace.
 
@@ -272,7 +290,7 @@ class Client:
         return self._navigation
 
     @property
-    def interactions(self):
+    def interactions(self) -> "Interactions":
         """
         Get interactions namespace.
 
@@ -290,7 +308,7 @@ class Client:
         return self._interactions
 
     @property
-    def interfaces(self):
+    def interfaces(self) -> "Interfaces":
         """
         Get interfaces namespace.
 
@@ -308,7 +326,7 @@ class Client:
         return self._interfaces
 
     @property
-    def player(self):
+    def player(self) -> "Player":
         """
         Get player accessor.
 
@@ -361,7 +379,7 @@ class Client:
             return objects
 
     @property
-    def cache(self):
+    def cache(self) -> "EventCache":
         """
         Event cache with instant access to game state and events.
 

@@ -1,18 +1,12 @@
 """OS-level input handling - mouse and keyboard."""
 
-# Legacy imports for backwards compatibility
+from shadowlib.input.keyboard import Keyboard
 from shadowlib.input.mouse import Mouse
 from shadowlib.input.runelite import RuneLite
 
 
 class Input:
     """Namespace for input controls with lazy-loading."""
-
-    _modules = {
-        "runelite": ("RuneLite", lambda cls, ns: cls()),  # No client param
-        "mouse": ("Mouse", lambda cls, ns: cls(runelite=ns._getRuneLite())),
-        # 'keyboard': ('Keyboard', lambda cls, ns: cls(runelite=ns._getRuneLite())),
-    }
 
     def __init__(self, client):
         """
@@ -22,43 +16,30 @@ class Input:
             client: The Client instance
         """
         self._client = client
-        self._cache = {}
-        self._runelite_instance = None
+        self._runelite: RuneLite | None = None
+        self._mouse: Mouse | None = None
+        self._keyboard: Keyboard | None = None
 
-    def _getRuneLite(self):
-        """Get or create RuneLite instance."""
-        if self._runelite_instance is None:
-            self._runelite_instance = self.runelite
-        return self._runelite_instance
+    @property
+    def runelite(self) -> RuneLite:
+        """Get RuneLite window manager."""
+        if self._runelite is None:
+            self._runelite = RuneLite()
+        return self._runelite
 
-    def __getattr__(self, name):
-        """Lazy-load input modules."""
-        if name.startswith("_"):
-            raise AttributeError(name)
+    @property
+    def mouse(self) -> Mouse:
+        """Get mouse controller."""
+        if self._mouse is None:
+            self._mouse = Mouse(runelite=self.runelite)
+        return self._mouse
 
-        if name in self._cache:
-            return self._cache[name]
-
-        if name not in self._modules:
-            raise AttributeError(f"Input has no module '{name}'")
-
-        entry = self._modules[name]
-        if isinstance(entry, tuple):
-            class_name, init_fn = entry
-        else:
-            class_name, init_fn = entry, None
-
-        module_path = f"shadowlib.input.{name}"
-        module = __import__(module_path, fromlist=[class_name])
-        cls = getattr(module, class_name)
-
-        if init_fn is None:
-            instance = cls(client=self._client)
-        else:
-            instance = init_fn(cls, self)
-
-        self._cache[name] = instance
-        return instance
+    @property
+    def keyboard(self) -> Keyboard:
+        """Get keyboard controller."""
+        if self._keyboard is None:
+            self._keyboard = Keyboard(runelite=self.runelite)
+        return self._keyboard
 
 
-__all__ = ["Input", "Mouse", "RuneLite"]
+__all__ = ["Input", "Keyboard", "Mouse", "RuneLite"]
