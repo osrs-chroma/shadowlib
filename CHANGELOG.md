@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.1](https://github.com/ShadowLib/shadowlib/compare/v3.1.0...v3.1.1) (2025-12-04)
+
+### 🐛 Bug Fixes
+
+* resolve warmup deadlock by pre-importing constants ([2bc52c8](https://github.com/ShadowLib/shadowlib/commit/2bc52c8fe972b87f0519a83230e1d4e2c96188dc))
+
 ## [3.1.0](https://github.com/ShadowLib/shadowlib/compare/v3.0.0...v3.1.0) (2025-12-04)
 
 ### ✨ Features
