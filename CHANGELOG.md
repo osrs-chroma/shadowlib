@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.2.1](https://github.com/ShadowLib/shadowlib/compare/v3.2.0...v3.2.1) (2025-12-04)
+
+### 🐛 Bug Fixes
+
+* prevent ItemContainer.__init__ from running in Bank singleton ([0978036](https://github.com/ShadowLib/shadowlib/commit/0978036263a4946c178b358e6f07690a34fb631c))
+
 ## [3.2.0](https://github.com/ShadowLib/shadowlib/compare/v3.1.1...v3.2.0) (2025-12-04)
 
 ### ✨ Features
