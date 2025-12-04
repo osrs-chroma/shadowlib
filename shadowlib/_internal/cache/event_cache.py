@@ -340,7 +340,11 @@ class EventCache:
             List of dicts with open widget information
         """
         with self._lock:
-            return self._state.active_widgets.copy()
+            return (
+                self._state.latest_states.get("active_interfaces", {})
+                .get("active_interfaces", [])
+                .copy()
+            )
 
 
 if __name__ == "__main__":

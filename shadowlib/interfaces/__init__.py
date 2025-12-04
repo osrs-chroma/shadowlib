@@ -98,7 +98,7 @@ class Interfaces:
             >>> open_interfaces = client.interfaces.getOpenInterfaces()
             >>> print(open_interfaces)  # e.g., [12, 15, 162]
         """
-        return list(client.cache.getOpenWidgets().keys())
+        return list(client.cache.getOpenWidgets())
 
     def getOpenInterfaceNames(self) -> list[str]:
         """

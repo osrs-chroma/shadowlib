@@ -14,8 +14,6 @@ RING_BUFFER_CHANNELS = [
     "animation_changed",  # Animation events
     "var_client_int_changed",  # Client int changes
     "var_client_str_changed",  # Client string changes
-    "widget_closed",  # Widget unload events
-    "widget_loaded",  # Widget load events
 ]
 
 # Latest-state channels - only current state matters, file overwritten
@@ -29,6 +27,7 @@ LATEST_STATE_CHANNELS = [
     "ground_items",  # Current ground items state
     "menu_open",  # Current menu information when open
     "selected_widget",  # Currently selected widget information
+    "active_interfaces",  # Currently active interface information
 ]
 
 # Doorbell file path - Java rings this after writing any event

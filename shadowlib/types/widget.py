@@ -70,7 +70,7 @@ WidgetField = Literal[
     "getXTextAlignment",
     "getYPositionMode",
     "getYTextAlignment",
-    "hasListener",
+    "isHidden",
 ]
 
 
@@ -149,7 +149,7 @@ class _WidgetFields:
     getXTextAlignment: WidgetField = "getXTextAlignment"
     getYPositionMode: WidgetField = "getYPositionMode"
     getYTextAlignment: WidgetField = "getYTextAlignment"
-    hasListener: WidgetField = "hasListener"
+    isHidden: WidgetField = "isHidden"
 
 
 # Singleton instance for autocomplete

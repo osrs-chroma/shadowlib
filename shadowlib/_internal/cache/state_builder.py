@@ -79,7 +79,6 @@ class StateBuilder:
         self.chat_history: Deque = deque(maxlen=100)  # Last 100 chat messages
         self.current_state: Dict[str, Any] = {}  # Other derived state as needed
         self.animating_actors: Dict[str, Any] = defaultdict(dict)  # Actors currently animating
-        self.active_widgets: Dict[int, Any] = {}  # Currently loaded widgets
 
         self.ground_items_initialized = False
         self.varps_initialized = False
@@ -107,7 +106,7 @@ class StateBuilder:
             # Latest-state: just overwrite
             event["_timestamp"] = time()
             self.latest_states[channel] = event
-            if channel in ["selected_widget", "menu_open"]:
+            if channel in ["selected_widget", "menu_open", "active_interfaces"]:
                 print(f"Updated latest state for channel {channel}: {event}")
         else:
             # Ring buffer: store history + update derived state
@@ -126,15 +125,6 @@ class StateBuilder:
             self._processVarbitChanged(event)
         elif channel in ["var_client_int_changed", "var_client_str_changed"]:
             self._processVarcChanged(event)
-        elif channel in ["widget_loaded", "widget_closed"]:
-            print(f"Processing widget event on channel {channel}: {event}")
-            widget_id = event.get("group_id")
-            if widget_id is not None:
-                if channel == "widget_loaded":
-                    self.active_widgets[widget_id] = event
-                else:
-                    if widget_id in self.active_widgets:
-                        del self.active_widgets[widget_id]
         elif channel == "item_container_changed":
             self._processItemContainerChanged(event)
         elif channel == "stat_changed":
