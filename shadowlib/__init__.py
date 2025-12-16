@@ -5,7 +5,7 @@ A Python SDK for Old School RuneScape bot development with an intuitive
 structure that mirrors the game's interface.
 """
 
-__version__ = "3.3.0"
+__version__ = "3.4.0"
 __author__ = "ShadowBot Team"
 
 # Ensure generated files path is available for imports

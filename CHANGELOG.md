@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.4.0](https://github.com/ShadowLib/shadowlib/compare/v3.3.0...v3.4.0) (2025-12-16)
+
+### ✨ Features
+
+* add drawing module, geometry enhancements, and GeneralInterface ([292154a](https://github.com/ShadowLib/shadowlib/commit/292154a024aa6f3aa37dfb5bc889deacb18cc59a))
+* Add Quad geometry type and projection utilities ([c9aa6eb](https://github.com/ShadowLib/shadowlib/commit/c9aa6eb75b46f814d90746ca2b4950aefe5f0bff))
+* **interfaces:** add scrollbox support to GeneralInterface ([1bfe2d7](https://github.com/ShadowLib/shadowlib/commit/1bfe2d7b6b0ee47c3be0713dbc8397b51c5adeca))
+* **navigation:** implement Walker class for smart pathfinding and tile clicking ([105cb60](https://github.com/ShadowLib/shadowlib/commit/105cb6022f42f59e58f3ab11a1ebc535b0e2b4e2))
+* update EventCache to retrieve active interfaces and refactor StateBuilder for widget management ([0351a0d](https://github.com/ShadowLib/shadowlib/commit/0351a0d8d08f608efee535fcc5d21d4d27737ad8))
+
+### 🐛 Bug Fixes
+
+* format code and fix consumeMenuClickedState bug ([fd7b4bd](https://github.com/ShadowLib/shadowlib/commit/fd7b4bddf10906818461a03bb3e768d9493a9c1d))
+
+### ♻️ Refactoring
+
+* **interfaces:** simplify scrollbox and add Box.contains(Box) ([a967e2d](https://github.com/ShadowLib/shadowlib/commit/a967e2d52a68d5e5aeff36b46ff6007370c4c17c))
+
 ## [3.3.0](https://github.com/ShadowLib/shadowlib/compare/v3.2.1...v3.3.0) (2025-12-04)
 
 ### ✨ Features
