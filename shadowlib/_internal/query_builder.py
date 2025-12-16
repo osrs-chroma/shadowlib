@@ -1028,17 +1028,10 @@ class QueryRef:
         if name.startswith("_") or name in ("query", "ref_id", "source_ref", "return_type"):
             raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
 
-        # Try to determine if this is a field or method by checking if it exists as a method
-        # If it's a known method with 0 args, it could be either - default to method
-        # If it's not a known method, assume it's a field access
-
-        # Check if this is a known method
+        # Check if this is a known method (any signature, not just 0-arg)
         is_method = False
-        if self.return_type:
-            # Try to find this as a method with 0 arguments
-            sig = self.query.api.getMethodSignature(name, [], self.return_type)
-            if sig:
-                is_method = True
+        if hasattr(self.query, "api") and name in self.query.api.api_data.get("methods", {}):
+            is_method = True
 
         if not is_method:
             # Assume it's a field access - return the field QueryRef directly

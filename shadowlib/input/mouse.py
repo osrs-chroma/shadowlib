@@ -52,6 +52,18 @@ class Mouse:
         self.runelite = runelite
         self.speed = speed
 
+    @property
+    def position(self) -> Tuple[int, int]:
+        """
+        Get current mouse position relative to game window.
+
+        Returns:
+            Tuple of (x, y) coordinates relative to RuneLite window
+        """
+        screen_x, screen_y = pag.position()
+        offset = self.runelite.getWindowOffset()
+        return (screen_x - offset[0], screen_y - offset[1])
+
     def _validateCoordinates(self, x: int, y: int, safe: bool) -> None:
         """
         Validate that coordinates are within game window bounds.

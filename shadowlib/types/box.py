@@ -168,20 +168,30 @@ class Box:
         point = self.randomPoint() if randomize else self.center()
         point.click(button=button)
 
-    def hover(self, randomize: bool = True) -> None:
+    def hover(self, randomize: bool = True) -> bool:
         """
-        Move mouse to hover within this box.
+        Move mouse to hover within this box. Returns early if already inside.
 
         Args:
             randomize: If True, hovers at random point. If False, hovers at center.
+
+        Returns:
+            True if mouse is now inside the box
 
         Example:
             >>> box = Box(100, 100, 200, 200)
             >>> box.hover()  # Hover at random point
             >>> box.hover(randomize=False)  # Hover at center
         """
+        from shadowlib.globals import getClient
+        from shadowlib.types.point import Point
+
+        current = Point(*getClient().input.mouse.position)
+        if self.contains(current):
+            return True
         point = self.randomPoint() if randomize else self.center()
         point.hover()
+        return True
 
     def rightClick(self, randomize: bool = True) -> None:
         """

@@ -286,19 +286,29 @@ class Quad:
         point = self.randomPoint() if randomize else self.center()
         point.click(button=button)
 
-    def hover(self, randomize: bool = True) -> None:
+    def hover(self, randomize: bool = True) -> bool:
         """
-        Move mouse to hover within this quad.
+        Move mouse to hover within this quad. Returns early if already inside.
 
         Args:
             randomize: If True, hovers at random point. If False, hovers at center.
+
+        Returns:
+            True if mouse is now inside the quad
 
         Example:
             >>> quad = Quad.fromCoords([(0, 0), (100, 0), (100, 100), (0, 100)])
             >>> quad.hover()  # Hover at random point
         """
+        from shadowlib.globals import getClient
+        from shadowlib.types.point import Point
+
+        current = Point(*getClient().input.mouse.position)
+        if self.contains(current):
+            return True
         point = self.randomPoint() if randomize else self.center()
         point.hover()
+        return True
 
     def rightClick(self, randomize: bool = True) -> None:
         """

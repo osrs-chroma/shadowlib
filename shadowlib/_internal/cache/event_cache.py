@@ -375,8 +375,10 @@ class EventCache:
 
     def consumeMenuClickedState(self) -> Dict[str, Any]:
         with self._lock:
-            menu_clicked = self._state.latest_states.get("menu_option_clicked", {}).copy()
-            menu_clicked["consumed"] = True
+            if "menu_option_clicked" in self._state.latest_states:
+                self._state.latest_states["menu_option_clicked"]["consumed"] = True
+                return self._state.latest_states["menu_option_clicked"].copy()
+            return {}
 
     def isMenuOptionClickedConsumed(self) -> bool:
         with self._lock:

@@ -28,10 +28,10 @@ def currentTick() -> int:
         Current tick count as an integer
     """
     client = globals.getClient()
-    return client.cache["tick"]
+    return client.cache.tick
 
 
-def waitTicks(ticks: int, tickDuration: float = 0.6):
+def waitTicks(ticks: int):
     """
     Wait for a specified number of game ticks.
 

@@ -2,8 +2,9 @@
 
 from shadowlib.client import client
 from shadowlib.interfaces.bank import Bank, bank
+from shadowlib.interfaces.fairy_ring import FairyRingInterface, fairy_ring
 from shadowlib.types.interfaces.general_interface import GeneralInterface
-from shadowlib.types.widget import Widget
+from shadowlib.types.widget import Widget, WidgetFields
 
 # Lazy-loaded reverse lookup: group_id -> name
 _interface_id_to_name: dict[int, str] | None = None
@@ -74,6 +75,7 @@ class ScrollInterface(GeneralInterface):
             [client.InterfaceID.Menu.LJ_LAYER1],
             get_children=False,
             menu_text="Continue",
+            scrollbox=client.InterfaceID.Menu.LJ_LAYER1,
         )
 
 
@@ -171,11 +173,28 @@ class Interfaces:
             wrong_text="</str>",
         )
         self.gnome_glider = GliderInterface()
+        self.charter_ship = GeneralInterface(
+            client.InterfaceID.CHARTERING_MENU_SIDE,
+            [client.InterfaceID.CharteringMenuSide.LIST_CONTENT],
+            get_children=True,
+            scrollbox=client.InterfaceID.CharteringMenuSide.LIST_CONTENT,
+        )
+        self.quetzal = GeneralInterface(
+            client.InterfaceID.QUETZAL_MENU,
+            [client.InterfaceID.QuetzalMenu.ICONS],
+            get_children=True,
+            use_actions=True,
+        )
 
     @property
     def bank(self) -> Bank:
         """Get bank interface singleton."""
         return bank
+
+    @property
+    def fairy_ring(self) -> "FairyRingInterface":
+        """Get fairy ring interface singleton."""
+        return fairy_ring
 
     def getOpenInterfaces(self) -> list[int]:
         """
